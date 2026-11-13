@@ -44,6 +44,7 @@ const row = {
   utm_content: null,
   owner_notes: null,
   email_error: null,
+  reminder_ids: ["rem_1"],
   ip: "1.2.3.4",
 };
 
@@ -103,6 +104,31 @@ describe("createLead", () => {
     const p = repo.createLead(validInput(), null);
     await expect(p).rejects.toThrow("connection failure");
     await expect(p).rejects.not.toBeInstanceOf(repo.SlotTakenError);
+  });
+});
+
+describe("reminders", () => {
+  it("reads stored reminder ids, treating a missing column value as none", async () => {
+    expect((await repo.createLead(validInput(), null)).reminderIds).toEqual(["rem_1"]);
+    result = { data: { ...row, reminder_ids: null }, error: null };
+    expect((await repo.createLead(validInput(), null)).reminderIds).toEqual([]);
+  });
+  it("stores reminder ids on the lead", async () => {
+    await repo.saveReminderIds(row.id, ["a", "b"]);
+    expect(calls).toContainEqual({ method: "update", args: [{ reminder_ids: ["a", "b"] }] });
+  });
+});
+
+describe("owner login attempts", () => {
+  it("counts recent failures for an address", async () => {
+    result = { count: 4, error: null };
+    expect(await repo.countRecentLoginFailures("1.2.3.4", new Date())).toBe(4);
+    expect(calls[0]).toEqual({ method: "from", args: ["owner_login_failures"] });
+  });
+  it("records a failure", async () => {
+    result = { data: null, error: null };
+    await repo.recordLoginFailure("1.2.3.4");
+    expect(calls).toContainEqual({ method: "insert", args: [{ ip: "1.2.3.4" }] });
   });
 });
 

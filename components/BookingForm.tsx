@@ -125,7 +125,7 @@ export function BookingForm() {
           slot: chosen === NO_SLOT ? null : chosen,
           message: text("message"),
           source: storedUtm(),
-          website: text("website"),
+          website: text("pispark-check"),
         }),
       });
       const body = await res.json().catch(() => null);
@@ -241,8 +241,8 @@ export function BookingForm() {
 
       {/* Hidden from people; bots fill it in. */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
-        <label htmlFor="website">Website</label>
-        <input id="website" name="website" tabIndex={-1} autoComplete="off" />
+        <label htmlFor="pispark-check">Leave this box empty</label>
+        <input id="pispark-check" name="pispark-check" tabIndex={-1} autoComplete="off" />
       </div>
 
       <fieldset>

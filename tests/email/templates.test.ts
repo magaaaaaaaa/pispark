@@ -97,6 +97,19 @@ describe("all emails", () => {
     }
     expect(all[0].html).toContain("&lt;script&gt;");
   });
+  it("do not turn a link typed by a visitor into a clickable link", () => {
+    const spam = lead({ message: "Win big at https://evil.example/win now" });
+    const e = ownerNotificationEmail(spam, SITE);
+    expect(e.html).toContain("https://evil.example/win");
+    expect(e.html).not.toContain('href="https://evil.example');
+    expect(offerEmail(lead(), "Read https://evil.example/notes before the lesson please", SITE).html).not.toContain(
+      'href="https://evil.example',
+    );
+  });
+  it("make our own links clickable", () => {
+    expect(confirmationEmail(lead(), CALL).html).toContain(`href="${CALL}"`);
+    expect(ownerNotificationEmail(lead(), SITE).html).toContain(`href="${SITE}/owner/leads/`);
+  });
   it("never promise a result", () => {
     for (const e of all) expect(`${e.subject} ${e.text} ${e.html}`.toLowerCase()).not.toContain("guarantee");
   });

@@ -28,6 +28,7 @@ export function lead(over: Partial<Lead> = {}): Lead {
     stage: "trial_booked",
     ownerNotes: null,
     emailError: null,
+    reminderIds: [],
     createdAt: "2027-03-01T10:00:00.000Z",
     ...over,
   };

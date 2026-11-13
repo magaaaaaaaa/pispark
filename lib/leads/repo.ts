@@ -50,6 +50,7 @@ function toLead(r: Row): Lead {
     },
     ownerNotes: (r.owner_notes as string | null) ?? null,
     emailError: (r.email_error as string | null) ?? null,
+    reminderIds: (r.reminder_ids as string[] | null) ?? [],
     createdAt: iso(r.created_at) as string,
   };
 }
@@ -150,3 +151,19 @@ export const updateStage = (id: string, stage: Stage) => patch(id, { stage });
 export const saveOwnerNotes = (id: string, notes: string) => patch(id, { owner_notes: notes });
 export const recordEmailError = (id: string, message: string) =>
   patch(id, { email_error: message.slice(0, 500) });
+export const saveReminderIds = (id: string, ids: string[]) => patch(id, { reminder_ids: ids });
+
+export async function countRecentLoginFailures(ip: string, since: Date): Promise<number> {
+  const { count, error } = await client()
+    .from("owner_login_failures")
+    .select("id", { count: "exact", head: true })
+    .eq("ip", ip)
+    .gte("created_at", since.toISOString());
+  fail(error);
+  return count ?? 0;
+}
+
+export async function recordLoginFailure(ip: string): Promise<void> {
+  const { error } = await client().from("owner_login_failures").insert({ ip });
+  fail(error);
+}

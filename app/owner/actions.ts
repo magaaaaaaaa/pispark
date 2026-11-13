@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   OWNER_COOKIE,
@@ -11,13 +11,23 @@ import {
   verifySessionToken,
 } from "@/lib/admin/session";
 import { STAGES, type Stage } from "@/lib/config";
-import { sendEmail } from "@/lib/email/send";
+import { cancelEmail, sendEmail } from "@/lib/email/send";
 import { offerEmail } from "@/lib/email/templates";
-import { SlotTakenError, getLead, saveOwnerNotes, updateStage } from "@/lib/leads/repo";
+import {
+  SlotTakenError,
+  countRecentLoginFailures,
+  getLead,
+  recordLoginFailure,
+  saveOwnerNotes,
+  saveReminderIds,
+  updateStage,
+} from "@/lib/leads/repo";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 const MIN_NOTES = 20;
+const MAX_LOGIN_FAILURES = 5;
+const LOCKOUT_MINUTES = 15;
 
 /** Every action checks the session itself; the proxy redirect is only a convenience. */
 async function requireOwner(): Promise<void> {
@@ -33,7 +43,22 @@ export async function login(_prev: unknown, formData: FormData): Promise<{ error
   if (!process.env.ADMIN_PASSWORD || !secret) {
     return { error: "The owner area is not set up yet: ADMIN_PASSWORD and SESSION_SECRET are missing." };
   }
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  try {
+    const since = new Date(Date.now() - LOCKOUT_MINUTES * 60_000);
+    if ((await countRecentLoginFailures(ip, since)) >= MAX_LOGIN_FAILURES) {
+      return { error: `Too many attempts. Wait ${LOCKOUT_MINUTES} minutes and try again.` };
+    }
+  } catch (e) {
+    // If the counter is unavailable the owner must still be able to get in.
+    console.error("Login attempt counter unavailable", e);
+  }
   if (!passwordMatches(password, process.env.ADMIN_PASSWORD)) {
+    try {
+      await recordLoginFailure(ip);
+    } catch (e) {
+      console.error("Could not record failed login", e);
+    }
     return { error: "Wrong password." };
   }
   (await cookies()).set(OWNER_COOKIE, createSessionToken(secret, new Date()), {
@@ -67,6 +92,27 @@ export async function setStage(id: string, stage: Stage): Promise<ActionResult> 
     return { ok: false, error: "The stage could not be saved. Try again." };
   }
   revalidatePath("/owner");
+
+  // A lead that is lost or parked must not keep getting "your lesson starts soon" emails.
+  if (stage === "lost" || stage === "not_now") {
+    const lead = await getLead(id);
+    const ids = lead?.reminderIds ?? [];
+    if (ids.length) {
+      const results = await Promise.allSettled(ids.map((r) => cancelEmail(r)));
+      const kept = ids.filter((_, i) => results[i].status === "rejected");
+      try {
+        await saveReminderIds(id, kept);
+      } catch (e) {
+        console.error("Could not update reminder ids", e);
+      }
+      if (kept.length) {
+        return {
+          ok: false,
+          error: "The stage was changed, but a reminder email could not be cancelled and may still be sent. Write to the family so they are not confused.",
+        };
+      }
+    }
+  }
   return { ok: true };
 }
 

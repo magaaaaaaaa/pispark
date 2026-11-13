@@ -39,3 +39,11 @@ export async function sendEmail(args: SendArgs): Promise<{ id: string }> {
   if (error || !data) throw new Error(error?.message ?? "Email service returned no result");
   return { id: data.id };
 }
+
+/** Cancel an email scheduled with scheduledAt. Throws if it cannot be cancelled. */
+export async function cancelEmail(id: string): Promise<void> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("Email is not configured: set RESEND_API_KEY");
+  const { error } = await new Resend(key).emails.cancel(id);
+  if (error) throw new Error(error.message);
+}

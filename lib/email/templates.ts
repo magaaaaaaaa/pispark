@@ -39,18 +39,25 @@ export function formatLocal(slotIso: string, timezone: string): string {
   return `${date} at ${time}`;
 }
 
-function linkify(escaped: string): string {
-  return escaped.replace(/https?:\/\/[^\s<]+/g, (u) => `<a href="${u}">${u}</a>`);
+/** Only links we put there ourselves become clickable; text typed by a visitor never does. */
+function linkify(escaped: string, ownLinks: string[]): string {
+  let out = escaped;
+  for (const link of ownLinks) {
+    if (!link) continue;
+    const e = escapeHtml(link);
+    out = out.split(e).join(`<a href="${e}">${e}</a>`);
+  }
+  return out;
 }
 
 /** Build both bodies from plain-text paragraphs so they can never drift apart. */
-function compose(subject: string, paragraphs: string[], footer: boolean): Email {
+function compose(subject: string, paragraphs: string[], footer: boolean, ownLinks: string[] = []): Email {
   const all = footer
     ? [...paragraphs, `PiSpark · ${CONTACT_EMAIL}\n${DISCLAIMER}`]
     : paragraphs;
   const text = all.join("\n\n");
   const body = all
-    .map((p) => `<p>${linkify(escapeHtml(p)).replace(/\n/g, "<br>")}</p>`)
+    .map((p) => `<p>${linkify(escapeHtml(p), ownLinks).replace(/\n/g, "<br>")}</p>`)
     .join("\n");
   return {
     subject,
@@ -87,6 +94,7 @@ export function confirmationEmail(lead: Lead, callUrl: string): Email {
       `A calendar invitation is attached. If you need a different time, reply to this email at least 12 hours before the lesson.`,
     ],
     true,
+    [callUrl],
   );
 }
 
@@ -123,6 +131,7 @@ export function ownerNotificationEmail(lead: Lead, siteUrl: string): Email {
       `Open the lead: ${siteUrl}/owner/leads/${lead.id}`,
     ],
     false,
+    [`${siteUrl}/owner/leads/${lead.id}`],
   );
 }
 
@@ -141,6 +150,7 @@ export function reminderEmail(lead: Lead, callUrl: string, kind: "day" | "hour")
       `If something has come up, reply to this email and we will find another time.`,
     ],
     true,
+    [callUrl],
   );
 }
 
@@ -156,5 +166,6 @@ export function offerEmail(lead: Lead, notes: string, siteUrl: string): Email {
       `More about how lessons work: ${siteUrl}`,
     ],
     true,
+    [siteUrl],
   );
 }

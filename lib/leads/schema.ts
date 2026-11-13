@@ -4,7 +4,15 @@ import type { Stage } from "@/lib/config";
 const blankToUndefined = (v: unknown) =>
   typeof v === "string" && v.trim() === "" ? undefined : v;
 
-const name = z.string().trim().min(1, "Required").max(80);
+/** Short free text that ends up in email subjects: no links, no control characters. */
+const plainLine = (v: string) =>
+  !/[\u0000-\u001f\u007f]/.test(v) && !/(:\/\/|www\.|\.[a-z]{2,}\/)/i.test(v);
+const name = z
+  .string()
+  .trim()
+  .min(1, "Required")
+  .max(80)
+  .refine(plainLine, "Use a plain name, without links");
 const email = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email"));
 const score = z
   .number()
@@ -31,7 +39,7 @@ export const leadInputSchema = z
     email,
     parentEmail: z.preprocess(blankToUndefined, email.optional()),
     grade: z.enum(["9", "10", "11", "12", "other"]),
-    testDate: z.preprocess(blankToUndefined, z.string().trim().max(40).optional()),
+    testDate: z.preprocess(blankToUndefined, z.string().trim().max(40).refine(plainLine, "Use plain text, without links").optional()),
     currentScore: z.preprocess((v) => (v === null ? undefined : v), score.optional()),
     targetScore: z.preprocess((v) => (v === null ? undefined : v), score.optional()),
     timezone: z.string().min(1).max(64).refine(isTimeZone, "Unknown time zone"),
@@ -76,5 +84,7 @@ export interface Lead extends Omit<LeadInput, "website"> {
   stage: Stage;
   ownerNotes: string | null;
   emailError: string | null;
+  /** Ids of scheduled reminder emails that have not been cancelled. */
+  reminderIds: string[];
   createdAt: string;
 }

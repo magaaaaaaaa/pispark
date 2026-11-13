@@ -10,6 +10,7 @@ vi.mock("@/lib/leads/repo", () => {
     bookedSlots: vi.fn(),
     countRecentByIp: vi.fn(),
     recordEmailError: vi.fn(),
+    saveReminderIds: vi.fn(),
   };
 });
 vi.mock("@/lib/email/send", () => ({ sendEmail: vi.fn() }));
@@ -38,6 +39,7 @@ beforeEach(() => {
   r.bookedSlots.mockResolvedValue([]);
   r.countRecentByIp.mockResolvedValue(0);
   r.recordEmailError.mockResolvedValue();
+  r.saveReminderIds.mockResolvedValue();
   send.mockResolvedValue({ id: "email_1" });
 });
 
@@ -88,6 +90,43 @@ describe("bookTrial", () => {
     expect(res.ok).toBe(true);
     expect(r.createLead).not.toHaveBeenCalled();
     expect(send).not.toHaveBeenCalled();
+  });
+
+  it("logs a dropped honeypot submission so a real family caught by it can be found", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await bookTrial({ ...validInput(), website: "filled by autofill" }, ctx);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("honeypot"), expect.objectContaining({ email: "dana@example.com" }));
+    warn.mockRestore();
+  });
+
+  it("sends emails one at a time, the family's confirmation first", async () => {
+    let inFlight = 0;
+    let maxInFlight = 0;
+    send.mockImplementation(async () => {
+      inFlight++;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((res) => setTimeout(res, 1));
+      inFlight--;
+      return { id: "x" };
+    });
+    await bookTrial(validInput(), ctx);
+    expect(maxInFlight).toBe(1);
+    expect(send.mock.calls[0][0]).toMatchObject({ to: "dana@example.com" });
+    expect(send.mock.calls[0][0].scheduledAt).toBeUndefined();
+  });
+
+  it("gives the owner a calendar file too", async () => {
+    await bookTrial(validInput(), ctx);
+    expect(sentTo("owner@example.com")[0].ics).toContain("DTSTART:20270316T000000Z");
+  });
+
+  it("remembers the scheduled reminders so they can be cancelled later", async () => {
+    send.mockImplementation(async (a) => ({ id: a.scheduledAt ? `rem_${a.scheduledAt.toISOString()}` : "now" }));
+    await bookTrial(validInput(), ctx);
+    expect(r.saveReminderIds).toHaveBeenCalledWith(lead().id, [
+      "rem_2027-03-15T00:00:00.000Z",
+      "rem_2027-03-15T23:00:00.000Z",
+    ]);
   });
 
   it("rejects invalid input with the failing field named", async () => {

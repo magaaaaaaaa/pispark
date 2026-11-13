@@ -14,6 +14,7 @@ import {
   createLead,
   findUpcomingByEmail,
   recordEmailError,
+  saveReminderIds,
 } from "@/lib/leads/repo";
 import { leadInputSchema, type Lead } from "@/lib/leads/schema";
 
@@ -43,6 +44,11 @@ export async function bookTrial(
   // A bot that fills the hidden field gets a success it cannot learn from.
   const honeypot = (raw as { website?: unknown } | null)?.website;
   if (typeof honeypot === "string" && honeypot !== "") {
+    // Logged so that a real family caught by an over-eager autofill can be found and contacted.
+    console.warn("Booking dropped by honeypot", {
+      email: String((raw as { email?: unknown }).email ?? "").slice(0, 200),
+      ip: ctx.ip,
+    });
     return { ok: true, leadId: "", existing: false };
   }
 
@@ -101,7 +107,11 @@ async function sendBookingEmails(lead: Lead, now: Date): Promise<void> {
     },
   ];
   if (process.env.OWNER_EMAIL) {
-    outgoing.push({ to: process.env.OWNER_EMAIL, ...ownerNotificationEmail(lead, siteUrl) });
+    outgoing.push({
+      to: process.env.OWNER_EMAIL,
+      ...ownerNotificationEmail(lead, siteUrl),
+      ics: lead.slot ? buildIcs(lead, callUrl) : undefined,
+    });
   }
   if (lead.slot) {
     for (const r of reminderTimes(lead.slot, now)) {
@@ -109,14 +119,26 @@ async function sendBookingEmails(lead: Lead, now: Date): Promise<void> {
     }
   }
 
-  const results = await Promise.allSettled(outgoing.map((m) => sendEmail(m)));
-  const errors = results
-    .map((res, i) =>
-      res.status === "rejected"
-        ? `${outgoing[i].subject}: ${res.reason instanceof Error ? res.reason.message : String(res.reason)}`
-        : null,
-    )
-    .filter((e): e is string => e !== null);
+  // One at a time, confirmation first: the email service limits requests per second,
+  // and if anything is going to fail it should not be the confirmation.
+  const errors: string[] = [];
+  const reminderIds: string[] = [];
+  for (const message of outgoing) {
+    try {
+      const { id } = await sendEmail(message);
+      if (message.scheduledAt) reminderIds.push(id);
+    } catch (e) {
+      errors.push(`${message.subject}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  if (reminderIds.length) {
+    try {
+      await saveReminderIds(lead.id, reminderIds);
+    } catch (e) {
+      console.error("Could not store reminder ids", { leadId: lead.id, error: e });
+    }
+  }
   if (errors.length) {
     console.error("Booking emails failed", { leadId: lead.id, errors });
     try {

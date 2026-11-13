@@ -25,7 +25,7 @@ export function LeadControls({
     start(async () => {
       const res = await action();
       setMessage(res.ok ? { ok: true, text: done } : { ok: false, text: res.error });
-      if (res.ok) router.refresh();
+      router.refresh();
     });
 
   return (

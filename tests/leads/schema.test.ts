@@ -54,6 +54,21 @@ describe("leadInputSchema", () => {
     expect(parse(validInput({ contactName: "x".repeat(81) })).success).toBe(false);
   });
 
+  it.each(["Visit http://evil.example now", "www.evil.example", "evil.example/win", "Dana\nReed", "Dana\u0000"])(
+    "rejects a name that carries a link or control character: %j",
+    (contactName) => {
+      expect(parse(validInput({ contactName })).success).toBe(false);
+    },
+  );
+
+  it.each(["Mary-Jane O'Neil", "José Álvarez Jr.", "Nguyễn Thị"])("accepts the real name %s", (studentName) => {
+    expect(parse(validInput({ studentName })).success).toBe(true);
+  });
+
+  it("rejects a test date that carries a link", () => {
+    expect(parse(validInput({ testDate: "see https://evil.example" })).success).toBe(false);
+  });
+
   it("rejects a blank name", () => {
     expect(parse(validInput({ studentName: "   " })).success).toBe(false);
   });

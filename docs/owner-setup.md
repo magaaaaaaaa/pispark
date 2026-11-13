@@ -70,3 +70,14 @@ The extra part after `?` is how each booking records where it came from.
 
 The "Who teaches" section on the home page is written generically. Send a short bio (your
 background, SAT score or teaching experience, a photo if you like) and it will be replaced.
+
+## What the site does not do yet
+
+- **Changing a trial time.** If you agree a new time with a family by email, the site does not
+  know about it: the old slot stays blocked and reminders go out for the old time. Until this is
+  added, set the lead to "Not now" (this cancels the reminders and frees the slot) and keep the
+  new time in your own calendar.
+- **Deleting old leads.** The privacy policy promises deletion within 12 months for families who
+  did not become students, and on request. For now this is done by hand in Supabase (Table
+  editor → leads → delete the row).
+- **Payment.** Invoices are sent by you, by hand.
