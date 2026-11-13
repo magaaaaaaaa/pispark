@@ -24,7 +24,10 @@ export default async function OwnerHome() {
   return (
     <div className="mx-auto max-w-5xl px-5 py-10">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl font-extrabold text-ink">Leads</h1>
+        <div className="flex items-baseline gap-5">
+          <h1 className="font-display text-3xl font-extrabold text-ink">Leads</h1>
+          <Link href="/owner/posts" className="text-base font-semibold underline">Posts</Link>
+        </div>
         <form action={logout}>
           <button type="submit" className="text-sm font-semibold underline">Sign out</button>
         </form>

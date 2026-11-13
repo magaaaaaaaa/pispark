@@ -1,0 +1,180 @@
+[
+  {
+    "scheduled_for": "2026-11-16",
+    "kind": "question",
+    "topic": "Systems of linear equations",
+    "check_note": "Solved with sympy: x = 3, y = 2, so x + y = 5.",
+    "caption": "SAT math question of the week. Two equations, two unknowns, one number to find. Try it before you swipe.\n\nThe SAT asked for x + y, not x and not y. Read the last line of the question twice.\n\nYour first lesson with us is free: link in bio.\n\n#SAT #SATmath #digitalSAT #SATprep #algebra",
+    "slides": [
+      {
+        "title": "SAT math question of the week",
+        "blocks": [
+          { "type": "math", "text": "2x + 3y = 12" },
+          { "type": "math", "text": "x − y = 1" },
+          { "type": "text", "text": "What is the value of x + y?" },
+          { "type": "choices", "items": ["3", "4", "5", "6"] }
+        ]
+      },
+      {
+        "title": "Solution",
+        "blocks": [
+          {
+            "type": "steps",
+            "items": [
+              "From the second equation, x = y + 1.",
+              "Put that into the first: 2(y + 1) + 3y = 12, so 5y = 10 and y = 2.",
+              "Then x = 2 + 1 = 3.",
+              "The question asks for x + y = 3 + 2."
+            ]
+          },
+          { "type": "answer", "text": "C) 5" }
+        ]
+      },
+      { "blocks": [{ "type": "cta" }] }
+    ]
+  },
+  {
+    "scheduled_for": "2026-11-17",
+    "kind": "mistake",
+    "topic": "Subtracting a bracket",
+    "check_note": "Expanded with sympy: 5 − (2x − 3) = 8 − 2x.",
+    "caption": "The most common algebra slip on the SAT is not hard maths. It is a minus sign in front of a bracket.\n\nThe minus applies to everything inside. Write the extra line, every time.\n\nYour first lesson with us is free: link in bio.\n\n#SAT #SATmath #digitalSAT #SATprep #algebra",
+    "slides": [
+      {
+        "title": "The minus sign that costs the most points",
+        "blocks": [
+          { "type": "text", "text": "Simplify this. Most wrong answers come from one step." },
+          { "type": "math", "text": "5 − (2x − 3)" }
+        ]
+      },
+      {
+        "title": "The slip",
+        "blocks": [
+          { "type": "math", "text": "5 − 2x − 3 = 2 − 2x" },
+          { "type": "text", "text": "The minus was applied to 2x but not to the −3. Inside the bracket, −3 becomes +3." }
+        ]
+      },
+      {
+        "title": "The fix",
+        "blocks": [
+          {
+            "type": "steps",
+            "items": [
+              "The minus sign multiplies everything in the bracket: −(2x − 3) = −2x + 3.",
+              "Now add: 5 − 2x + 3."
+            ]
+          },
+          { "type": "answer", "text": "8 − 2x" }
+        ]
+      },
+      { "blocks": [{ "type": "cta" }] }
+    ]
+  },
+  {
+    "scheduled_for": "2026-11-18",
+    "kind": "strategy",
+    "topic": "Desmos: where two lines meet",
+    "check_note": "Solved with sympy: y = 2x − 1 and y = −x + 8 meet at (3, 5).",
+    "caption": "The digital SAT has a graphing calculator built in, and many students never open it.\n\nFor any question about where two lines meet: type both, tap the crossing point, read the answer. Then check it by hand if you have time.\n\nYour first lesson with us is free: link in bio.\n\n#SAT #SATmath #digitalSAT #Desmos #SATprep",
+    "slides": [
+      {
+        "title": "Let Desmos find where two lines meet",
+        "blocks": [
+          { "type": "text", "text": "The graphing calculator is built into the digital SAT. Use it." }
+        ]
+      },
+      {
+        "title": "Try it on these",
+        "blocks": [
+          { "type": "math", "text": "y = 2x − 1" },
+          { "type": "math", "text": "y = −x + 8" },
+          {
+            "type": "steps",
+            "items": [
+              "Open the calculator and type each equation on its own line.",
+              "Tap the point where the two lines cross.",
+              "Desmos shows its coordinates."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "What you should see",
+        "blocks": [
+          { "type": "answer", "text": "(3, 5)" },
+          { "type": "text", "text": "Check: 2·3 − 1 = 5 and −3 + 8 = 5. Both lines pass through the same point." }
+        ]
+      },
+      { "blocks": [{ "type": "cta" }] }
+    ]
+  },
+  {
+    "scheduled_for": "2026-11-19",
+    "kind": "parent",
+    "topic": "SAT dates left this school year",
+    "check_note": "Dates and deadlines taken from College Board's dates and deadlines page on 2026-11-14.",
+    "caption": "For parents: there are four SAT dates left this school year. The December one closes for registration on November 20.\n\nA simple way to plan: pick the test date first, then count back. Steady weekly practice over a couple of months does more than a rush in the last fortnight.\n\nDates are from College Board. Always confirm on their site before you register.\n\nYour first lesson with us is free: link in bio.\n\n#SAT #SATprep #digitalSAT #collegeadmissions #parents",
+    "slides": [
+      {
+        "title": "Four SAT dates left this school year",
+        "blocks": [{ "type": "text", "text": "For parents planning ahead. Dates from College Board." }]
+      },
+      {
+        "title": "The dates",
+        "blocks": [
+          {
+            "type": "steps",
+            "items": ["December 5, 2026", "March 6, 2027", "May 1, 2027", "June 5, 2027"]
+          },
+          { "type": "text", "text": "Registration for December 5 closes on November 20." }
+        ]
+      },
+      {
+        "title": "How to plan",
+        "blocks": [
+          {
+            "type": "steps",
+            "items": [
+              "Choose the test date first.",
+              "Count back and set a weekly practice time.",
+              "Leave room for a second attempt before applications are due."
+            ]
+          }
+        ]
+      },
+      { "blocks": [{ "type": "cta" }] }
+    ]
+  },
+  {
+    "scheduled_for": "2026-11-20",
+    "kind": "challenge",
+    "topic": "Quadratics: exactly one solution",
+    "check_note": "Solved with sympy: discriminant 16 − 4k = 0 gives k = 4; then x² − 4x + 4 = 0 has the single solution x = 2.",
+    "caption": "Friday challenge, a step harder than Monday's.\n\n\"Exactly one solution\" is a signal on the SAT. It means the discriminant is zero. Spot the phrase and the question takes thirty seconds.\n\nYour first lesson with us is free: link in bio.\n\n#SAT #SATmath #digitalSAT #SATprep #quadratics",
+    "slides": [
+      {
+        "title": "Friday challenge",
+        "blocks": [
+          { "type": "math", "text": "x² − 4x + k = 0" },
+          { "type": "text", "text": "The equation has exactly one real solution. What is the value of k?" },
+          { "type": "choices", "items": ["2", "4", "8", "16"] }
+        ]
+      },
+      {
+        "title": "Solution",
+        "blocks": [
+          {
+            "type": "steps",
+            "items": [
+              "Exactly one real solution means the discriminant b² − 4ac is zero.",
+              "Here a = 1, b = −4, c = k: (−4)² − 4·1·k = 0.",
+              "16 − 4k = 0, so k = 4."
+            ]
+          },
+          { "type": "answer", "text": "B) 4" }
+        ]
+      },
+      { "blocks": [{ "type": "cta" }] }
+    ]
+  }
+]
