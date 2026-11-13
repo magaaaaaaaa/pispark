@@ -38,7 +38,7 @@ npm run build
 | `SUPABASE_URL` | Project URL from Supabase |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only key. Never expose it to the browser |
 | `RESEND_API_KEY` | API key from Resend |
-| `EMAIL_FROM` | Sender, e.g. `PiSpark <hello@pispark.site>`. The domain must be verified in Resend |
+| `EMAIL_FROM` | Sender, e.g. `PiSpark <book_a_lesson@pispark.site>`. The domain must be verified in Resend |
 | `OWNER_EMAIL` | Where new-lead notifications go; also the reply-to on emails to families |
 | `TRIAL_CALL_URL` | Video call link put in confirmations. May be empty: emails then say the link will follow |
 | `ADMIN_PASSWORD` | Password for `/owner`. Use a long one |

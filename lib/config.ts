@@ -24,6 +24,6 @@ export const STAGES = [
 ] as const;
 export type Stage = (typeof STAGES)[number];
 
-export const CONTACT_EMAIL = "hello@pispark.site";
+export const CONTACT_EMAIL = "book_a_lesson@pispark.site";
 export const DISCLAIMER =
   "SAT is a trademark of College Board, which is not affiliated with PiSpark.";

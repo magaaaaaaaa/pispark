@@ -16,7 +16,7 @@ export interface SendArgs {
 export async function sendEmail(args: SendArgs): Promise<{ id: string }> {
   const key = process.env.RESEND_API_KEY;
   if (!key) throw new Error("Email is not configured: set RESEND_API_KEY");
-  const from = process.env.EMAIL_FROM || "PiSpark <hello@pispark.site>";
+  const from = process.env.EMAIL_FROM || "PiSpark <book_a_lesson@pispark.site>";
   const { data, error } = await new Resend(key).emails.send({
     from,
     to: args.to,
