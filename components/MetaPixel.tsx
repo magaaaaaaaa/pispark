@@ -20,6 +20,9 @@ export function MetaPixel() {
 
   useEffect(() => {
     if (!PIXEL_ID || consent !== "granted" || window.fbq) return;
+    // Pages opened from a personal email link carry that link in the address;
+    // it must never be reported to Meta.
+    if (/^\/(pick|unsubscribe)/.test(window.location.pathname)) return;
     const fbq: Fbq = (...args: unknown[]) => {
       if (fbq.callMethod) fbq.callMethod(...args);
       else fbq.queue!.push(args);

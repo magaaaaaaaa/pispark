@@ -11,6 +11,7 @@ const sign = (id: string, secret: string) =>
  * another family's lead by guessing ids.
  */
 export function leadToken(id: string, secret: string): string {
+  if (!secret) throw new Error("SESSION_SECRET is not set, so links in emails cannot be signed");
   return `${id}.${sign(id, secret)}`;
 }
 

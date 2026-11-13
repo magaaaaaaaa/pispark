@@ -18,6 +18,9 @@ const fullLabel = (iso: string, tz: string) =>
 const inputClass = "mt-1 block w-full rounded-lg border-2 border-ink bg-white px-3 py-2 text-base text-ink";
 const labelClass = "block text-sm font-semibold text-ink";
 
+/** Move keyboard and screen-reader focus to a panel when it appears. */
+const focusOnMount = (el: HTMLElement | null) => el?.focus();
+
 export function PickTime({
   token,
   firstName,
@@ -98,7 +101,7 @@ export function PickTime({
   if (justBooked && booked) {
     return (
       <div>
-        <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink">You’re booked, {firstName}.</h1>
+        <h1 ref={focusOnMount} tabIndex={-1} className="font-display text-4xl font-extrabold tracking-tight text-ink">You’re booked, {firstName}.</h1>
         <p className="mt-4 rounded-lg border-2 border-ink bg-spark p-4 text-xl font-bold text-ink">
           {fullLabel(booked, timezone)}
         </p>
@@ -139,7 +142,7 @@ export function PickTime({
       )}
 
       {choice && (
-        <div className="mt-6 rounded-lg border-2 border-ink bg-paper p-4">
+        <div ref={focusOnMount} tabIndex={-1} className="mt-6 rounded-lg border-2 border-ink bg-paper p-4">
           <p className="text-lg text-ink">Book this time?</p>
           <p className="mt-1 text-xl font-bold text-ink">{fullLabel(choice, timezone)}</p>
           <div className="mt-4 flex flex-wrap gap-3">
@@ -212,7 +215,7 @@ export function PickTime({
                     key={s}
                     type="button"
                     onClick={() => setChoice(s)}
-                    className="rounded-lg border-2 border-grid bg-white px-2 py-2 text-sm font-semibold text-ink hover:border-ink"
+                    className="rounded-lg border-2 border-grid bg-white px-2 py-3 text-base font-semibold text-ink hover:border-ink"
                   >
                     {timeLabel(s, timezone)}
                   </button>
@@ -305,7 +308,7 @@ function DetailsForm({ token }: { token: string }) {
       </div>
       {state === "error" && (
         <p role="alert" className="mt-3 font-semibold text-error">
-          That did not save. Check the scores are between 200 and 800 in steps of 10, then try again.
+          That did not save. If you entered scores, they need to be between 200 and 800 in steps of 10. Your booking is not affected.
         </p>
       )}
       <button type="submit" disabled={state === "saving"} className="mt-4 rounded-lg border-2 border-ink bg-ink px-5 py-3 font-bold text-white disabled:opacity-60">

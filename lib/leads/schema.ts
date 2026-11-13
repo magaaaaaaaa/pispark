@@ -57,6 +57,13 @@ export const captureInputSchema = z
         message: "Add a parent's email so we can copy them in",
       });
     }
+    if (v.parentEmail && v.parentEmail === v.email) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["parentEmail"],
+        message: "Use a parent's email here, not your own",
+      });
+    }
   });
 
 /** Optional extras, asked only after the lead is saved. */
@@ -112,8 +119,10 @@ export interface Lead extends LeadDetails {
   emailError: string | null;
   /** Ids of scheduled reminder emails that have not been cancelled. */
   reminderIds: string[];
-  /** Ids of scheduled follow-up nudges that have not been cancelled. */
-  followupIds: string[];
+  /** How many follow-up nudges have gone out so far. */
+  followupsSent: number;
   unsubscribedAt: string | null;
+  /** Why a sign-up was saved without emails ("honeypot", "rate_limited"), or null. */
+  flagged: string | null;
   createdAt: string;
 }

@@ -25,8 +25,9 @@ export function lead(over: Partial<Lead> = {}): Lead {
     ownerNotes: null,
     emailError: null,
     reminderIds: [],
-    followupIds: [],
+    followupsSent: 0,
     unsubscribedAt: null,
+    flagged: null,
     createdAt: "2027-03-01T10:00:00.000Z",
     ...over,
   };

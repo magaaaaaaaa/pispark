@@ -8,7 +8,8 @@
 3. They pick a time on the site or from the email. You get a "Trial booked" email with a
    calendar file. They get a confirmation and two reminders.
 4. If they do not pick a time, they get five short emails over two weeks (days 1, 3, 6, 10
-   and 14). These stop when they book, unsubscribe, or you mark the lead "Lost" or "Not now".
+   and 14), sent once a day at about 6 pm US Eastern. These stop when they book, unsubscribe,
+   or you move the lead to any other stage.
 5. After the trial, open the lead at `pispark.site/owner`, write three or four lines, and
    press "Send offer".
 
@@ -50,6 +51,12 @@ goal of every reply is to get them onto the site, where email takes over.
 
 The part after `?` is how each lead records where it came from. You see it on every lead.
 
+## Leads marked "check by hand"
+
+A sign-up that looks automated (it filled a hidden field, or many came from one connection in
+an hour) is still saved, but gets no emails. It shows a yellow "check by hand" mark in your
+list. If the name and email look real, write to them yourself.
+
 ## Still to do
 
 - **Video call link.** Create one reusable Google Meet link (meet.google.com → New meeting →
@@ -69,9 +76,9 @@ The part after `?` is how each lead records where it came from. You see it on ev
 
 ## Limits to know about
 
-- The free email plan sends 100 emails a day. A new lead uses up to 7 (reply, alert, five
-  follow-ups), a booking up to 4. That is roughly 12 new leads a day before emails start
-  failing. If you get near that, upgrade Resend first. Failed emails are flagged on the lead.
+- The free email plan sends 100 emails a day. A new lead uses 2 at once (reply and your
+  alert) and up to 5 more over two weeks; a booking uses 4. That is comfortable up to
+  roughly 15 new leads a day. If you get near that, upgrade Resend first. Failed emails are flagged on the lead.
 - The humour ("800 factory", the stereotype line) is on the site and fine for your own posts.
   Keep it out of paid ads: Meta restricts ad copy that refers to ethnicity, and a new ad
   account is the wrong place to test that.

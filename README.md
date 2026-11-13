@@ -15,8 +15,9 @@ A two-step funnel built so that no lead is lost:
 2. **Pick a time.** On `/pick` or from the email, the family books or moves a free 25-minute
    trial (`POST /api/pick`). Confirmation with a calendar file, reminders 24 hours and 1 hour
    before.
-3. **Follow-up.** Leads who have not booked get five emails over 14 days, cancelled when they
-   book, unsubscribe, or are marked lost.
+3. **Follow-up.** A daily job (`/api/cron/followups`, scheduled in `vercel.json`) sends leads
+   who have not booked up to five emails over 14 days. It checks each lead's state at send
+   time, so booking, unsubscribing or closing the lead stops them at once.
 
 The owner tracks leads through stages at `/owner` and sends the post-trial offer from there.
 
@@ -53,6 +54,7 @@ npm run build
 | `TRIAL_CALL_URL` | Video call link put in confirmations. May be empty: emails then say the link will follow |
 | `ADMIN_PASSWORD` | Password for `/owner`. Use a long one |
 | `SESSION_SECRET` | Random string, 32+ characters. Signs the owner session cookie and the links in emails. Changing it breaks links already sent |
+| `CRON_SECRET` | Random string. Vercel sends it with the daily follow-up job; the job refuses to run without it |
 | `NEXT_PUBLIC_SITE_URL` | `https://pispark.site` |
 | `NEXT_PUBLIC_META_PIXEL_ID` | Optional. When set, a cookie notice appears and the Pixel loads after consent |
 

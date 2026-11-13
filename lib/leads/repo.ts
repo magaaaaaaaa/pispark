@@ -3,6 +3,14 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Stage } from "@/lib/config";
 import type { CaptureInput, Lead, LeadDetails } from "./schema";
 
+/** The family already has an open, unbooked lead (enforced by a unique index). */
+export class DuplicateLeadError extends Error {
+  constructor() {
+    super("This email already has an open lead");
+    this.name = "DuplicateLeadError";
+  }
+}
+
 export class SlotTakenError extends Error {
   constructor() {
     super("That trial slot is already booked");
@@ -51,8 +59,9 @@ function toLead(r: Row): Lead {
     ownerNotes: (r.owner_notes as string | null) ?? null,
     emailError: (r.email_error as string | null) ?? null,
     reminderIds: (r.reminder_ids as string[] | null) ?? [],
-    followupIds: (r.followup_ids as string[] | null) ?? [],
+    followupsSent: (r.followups_sent as number | null) ?? 0,
     unsubscribedAt: iso(r.unsubscribed_at),
+    flagged: (r.flagged as string | null) ?? null,
     createdAt: iso(r.created_at) as string,
   };
 }
@@ -61,7 +70,11 @@ function fail(error: { message?: string } | null | undefined): void {
   if (error) throw new Error(error.message ?? "Database error");
 }
 
-export async function createLead(input: CaptureInput, ip: string | null): Promise<Lead> {
+export async function createLead(
+  input: CaptureInput,
+  ip: string | null,
+  flagged?: string,
+): Promise<Lead> {
   const { data, error } = await client()
     .from("leads")
     .insert({
@@ -76,9 +89,11 @@ export async function createLead(input: CaptureInput, ip: string | null): Promis
       utm_campaign: input.source.utmCampaign ?? null,
       utm_content: input.source.utmContent ?? null,
       ip,
+      flagged: flagged ?? null,
     })
     .select()
     .single();
+  if (error?.code === "23505") throw new DuplicateLeadError();
   fail(error);
   return toLead(data as Row);
 }
@@ -177,7 +192,40 @@ export async function recordLoginFailure(ip: string): Promise<void> {
   fail(error);
 }
 
-export const saveFollowupIds = (id: string, ids: string[]) => patch(id, { followup_ids: ids });
+/** Leads that may still be owed a follow-up nudge. */
+export async function listNewLeads(): Promise<Lead[]> {
+  const { data, error } = await client()
+    .from("leads")
+    .select("*")
+    .eq("stage", "new")
+    .is("unsubscribed_at", null)
+    .is("flagged", null)
+    .lt("followups_sent", 5)
+    .order("created_at", { ascending: true })
+    .limit(500);
+  fail(error);
+  return ((data as Row[] | null) ?? []).map(toLead);
+}
+
+/**
+ * Mark nudge number `n` (0-based) as going out. Returns false if the lead is no
+ * longer waiting for exactly that nudge — it booked, unsubscribed, or another
+ * run got there first — in which case nothing must be sent.
+ */
+export async function claimFollowUp(id: string, n: number): Promise<boolean> {
+  if (!UUID.test(id)) return false;
+  const { data, error } = await client()
+    .from("leads")
+    .update({ followups_sent: n + 1 })
+    .eq("id", id)
+    .eq("stage", "new")
+    .eq("followups_sent", n)
+    .is("unsubscribed_at", null)
+    .select("id");
+  fail(error);
+  return ((data as Row[] | null) ?? []).length === 1;
+}
+
 export const markUnsubscribed = (id: string) =>
   patch(id, { unsubscribed_at: new Date().toISOString() });
 

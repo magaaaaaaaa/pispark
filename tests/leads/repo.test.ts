@@ -11,7 +11,7 @@ function builder(): unknown {
     calls.push({ method, args });
     return b;
   };
-  for (const m of ["from", "insert", "select", "update", "eq", "gt", "gte", "in", "not", "order", "limit", "single", "maybeSingle"]) {
+  for (const m of ["from", "insert", "select", "update", "eq", "gt", "gte", "in", "is", "lt", "not", "order", "limit", "single", "maybeSingle"]) {
     b[m] = chain(m);
   }
   b.then = (resolve: (r: Result) => unknown) => Promise.resolve(result).then(resolve);
@@ -46,7 +46,8 @@ const row = {
   owner_notes: null,
   email_error: null,
   reminder_ids: ["rem_1"],
-  followup_ids: ["f_1"],
+  followups_sent: 2,
+  flagged: null,
   unsubscribed_at: null,
   ip: "1.2.3.4",
 };
@@ -75,6 +76,7 @@ describe("createLead", () => {
       utm_campaign: null,
       utm_content: null,
       ip: "1.2.3.4",
+      flagged: null,
     });
   });
 
@@ -86,18 +88,27 @@ describe("createLead", () => {
       contactName: "Dana",
       slot: null,
       reminderIds: ["rem_1"],
-      followupIds: ["f_1"],
+      followupsSent: 2,
+      flagged: null,
       unsubscribedAt: null,
     });
     expect(lead.studentName).toBeUndefined();
     expect(lead.grade).toBeUndefined();
   });
 
-  it("treats missing id lists as empty", async () => {
-    result = { data: { ...row, reminder_ids: null, followup_ids: null }, error: null };
-    const lead = await repo.createLead(captureInput(), null);
-    expect(lead.reminderIds).toEqual([]);
-    expect(lead.followupIds).toEqual([]);
+  it("treats a missing reminder list as empty", async () => {
+    result = { data: { ...row, reminder_ids: null }, error: null };
+    expect((await repo.createLead(captureInput(), null)).reminderIds).toEqual([]);
+  });
+
+  it("stores why a sign-up was saved without emails", async () => {
+    await repo.createLead(captureInput(), null, "honeypot");
+    expect(arg("insert")).toMatchObject({ flagged: "honeypot" });
+  });
+
+  it("reports a second open lead for the same email as DuplicateLeadError", async () => {
+    result = { data: null, error: { code: "23505", message: "duplicate key" } };
+    await expect(repo.createLead(captureInput(), null)).rejects.toBeInstanceOf(repo.DuplicateLeadError);
   });
 
   it("rethrows a database error", async () => {
@@ -155,13 +166,32 @@ describe("id lists and unsubscribe", () => {
     await repo.saveReminderIds(ID, ["a", "b"]);
     expect(arg("update")).toEqual({ reminder_ids: ["a", "b"] });
   });
-  it("stores follow-up ids", async () => {
-    await repo.saveFollowupIds(ID, []);
-    expect(arg("update")).toEqual({ followup_ids: [] });
-  });
   it("marks a lead unsubscribed with a timestamp", async () => {
     await repo.markUnsubscribed(ID);
     expect(String(arg("update").unsubscribed_at)).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+});
+
+describe("follow-up nudges", () => {
+  it("lists only unbooked, subscribed, unflagged leads with nudges left", async () => {
+    result = { data: [row], error: null };
+    expect(await repo.listNewLeads()).toHaveLength(1);
+    expect(calls).toContainEqual({ method: "eq", args: ["stage", "new"] });
+    expect(calls).toContainEqual({ method: "is", args: ["unsubscribed_at", null] });
+    expect(calls).toContainEqual({ method: "is", args: ["flagged", null] });
+    expect(calls).toContainEqual({ method: "lt", args: ["followups_sent", 5] });
+  });
+  it("claims a nudge only while the lead is still waiting for exactly that one", async () => {
+    result = { data: [{ id: ID }], error: null };
+    expect(await repo.claimFollowUp(ID, 1)).toBe(true);
+    expect(arg("update")).toEqual({ followups_sent: 2 });
+    expect(calls).toContainEqual({ method: "eq", args: ["followups_sent", 1] });
+    expect(calls).toContainEqual({ method: "eq", args: ["stage", "new"] });
+    expect(calls).toContainEqual({ method: "is", args: ["unsubscribed_at", null] });
+  });
+  it("reports a claim that matched nothing", async () => {
+    result = { data: [], error: null };
+    expect(await repo.claimFollowUp(ID, 1)).toBe(false);
   });
 });
 

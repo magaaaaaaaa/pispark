@@ -18,7 +18,6 @@ import {
   countRecentLoginFailures,
   getLead,
   recordLoginFailure,
-  saveFollowupIds,
   saveOwnerNotes,
   saveReminderIds,
   updateStage,
@@ -95,19 +94,10 @@ export async function setStage(id: string, stage: Stage): Promise<ActionResult> 
   revalidatePath("/owner");
 
   // A lead that is lost or parked must not keep getting "your lesson starts soon"
-  // or "pick a time" emails.
+  // emails. (Follow-up nudges need no cancelling: they only ever go to stage "new".)
   if (stage === "lost" || stage === "not_now") {
     const lead = await getLead(id);
     const reminders = lead?.reminderIds ?? [];
-    const followups = lead?.followupIds ?? [];
-    if (followups.length) {
-      await Promise.allSettled(followups.map((f) => cancelEmail(f)));
-      try {
-        await saveFollowupIds(id, []);
-      } catch (e) {
-        console.error("Could not update follow-up ids", e);
-      }
-    }
     if (reminders.length) {
       const results = await Promise.allSettled(reminders.map((r) => cancelEmail(r)));
       const kept = reminders.filter((_, i) => results[i].status === "rejected");

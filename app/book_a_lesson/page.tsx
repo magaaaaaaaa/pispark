@@ -8,7 +8,8 @@ export const metadata: Metadata = {
 };
 
 /** A short page for links from posts, ads and DMs: the offer and the form, nothing else. */
-export default function BookALesson() {
+export default async function BookALesson({ searchParams }: PageProps<"/book_a_lesson">) {
+  const retry = (await searchParams).retry === "1";
   return (
     <section className="graph-paper">
       <div className="mx-auto max-w-xl px-5 py-10 sm:py-16">
@@ -20,6 +21,11 @@ export default function BookALesson() {
             {TRIAL_MINUTES} minutes, live, 1-on-1. Leave your email, then pick a time. Lessons
             after that are ${PRICE_PER_HOUR_USD} an hour.
           </p>
+          {retry && (
+            <p role="alert" className="mb-5 rounded-lg border-2 border-error bg-white p-3 font-semibold text-error">
+              That did not go through. Check the name and email and try once more.
+            </p>
+          )}
           <CaptureForm />
         </div>
       </div>

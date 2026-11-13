@@ -28,13 +28,23 @@ export default async function LeadPage({ params }: PageProps<"/owner/leads/[id]"
     ["Source", [lead.source.utmSource, lead.source.utmMedium, lead.source.utmCampaign, lead.source.utmContent].filter(Boolean).join(" / ") || "direct"],
     ["Message", lead.message ?? "-"],
     ["Signed up", ownerTime(lead.createdAt)],
-    ["Follow-up emails", lead.unsubscribedAt ? "Unsubscribed" : `${lead.followupIds.length} still scheduled`],
+    ["Follow-up emails", lead.unsubscribedAt ? "Unsubscribed" : `${lead.followupsSent} of 5 sent`],
   ];
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-10">
       <p><Link href="/owner" className="text-sm font-semibold underline">All leads</Link></p>
       <h1 className="mt-2 font-display text-3xl font-extrabold text-ink">{lead.contactName}</h1>
+
+      {lead.flagged && (
+        <p role="alert" className="mt-4 rounded-md border-2 border-ink bg-spark p-3 text-ink">
+          <strong>This sign-up got no emails.</strong>{" "}
+          {lead.flagged === "honeypot"
+            ? "It filled in a hidden field that only bots usually fill."
+            : "Many sign-ups came from the same connection within an hour."}{" "}
+          If it looks like a real person, write to them yourself.
+        </p>
+      )}
 
       {lead.emailError && (
         <p role="alert" className="mt-4 rounded-md border-2 border-error bg-white p-3 text-error">

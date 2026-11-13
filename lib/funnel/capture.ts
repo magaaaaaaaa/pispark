@@ -1,107 +1,82 @@
 import "server-only";
 import { generateSlots } from "@/lib/booking/slots";
-import { cancelEmail, sendEmail, type SendArgs } from "@/lib/email/send";
+import type { SendArgs } from "@/lib/email/send";
+import { confirmationEmail, instantReplyEmail, ownerLeadEmail } from "@/lib/email/templates";
 import {
-  FOLLOWUP_COUNT,
-  followUpEmail,
-  formatShort,
-  instantReplyEmail,
-  ownerLeadEmail,
-  type FamilyLinks,
-} from "@/lib/email/templates";
-import {
+  DuplicateLeadError,
   bookedSlots,
   countRecentByIp,
   createLead,
   findOpenByEmail,
-  getLead,
-  recordEmailError,
-  saveFollowupIds,
 } from "@/lib/leads/repo";
 import { captureInputSchema, type Lead } from "@/lib/leads/schema";
+import { familyLinks, siteUrl } from "./links";
+import { noteEmailErrors, sendAll } from "./mail";
 import { suggestSlots } from "./suggest";
 import { leadToken, tokenSecret } from "./token";
 
 export type CaptureResult =
   | {
       ok: true;
-      /** Goes into the "pick a time" link. Empty for a dropped bot. */
+      /**
+       * Lets this browser go straight on to pick a time. Only ever given for a
+       * lead created by this very request: a returning family gets their link
+       * by email, never on screen, so knowing an email is not enough to reach it.
+       */
       token: string;
       existing: boolean;
-      booked: boolean;
-      /** Set only for a newly created lead, so the caller can schedule its follow-ups. */
-      created?: Lead;
     }
   | { ok: false; status: 400; issues: { path: string; message: string }[] }
   | { ok: false; status: 429 };
 
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
-const MAX_PER_IP_PER_HOUR = 5;
+/** Above this many sign-ups an hour from one address, save but do not email. */
+const SOFT_LIMIT = 5;
+/** Above this many, refuse: that is a flood, not a school's shared Wi-Fi. */
+const HARD_LIMIT = 30;
 const REUSE_DAYS = 30;
 
-/** Days after sign-up on which an unbooked lead gets a nudge. */
-export const FOLLOWUP_DAYS = [1, 3, 6, 10, 14] as const;
-
-const siteUrl = () => process.env.NEXT_PUBLIC_SITE_URL || "https://pispark.site";
-
-export function familyLinks(lead: Lead, suggested: string[]): FamilyLinks {
-  const token = leadToken(lead.id, tokenSecret());
-  const pickUrl = `${siteUrl()}/pick?l=${token}`;
-  return {
-    pickUrl,
-    unsubscribeUrl: `${siteUrl()}/unsubscribe?l=${token}`,
-    suggestions: suggested.map((s) => ({
-      label: formatShort(s, lead.timezone),
-      url: `${pickUrl}&slot=${encodeURIComponent(s)}`,
-    })),
-  };
-}
-
-/** Send in order, one at a time; collect failures instead of throwing. */
-export async function sendAll(messages: SendArgs[]): Promise<{ ids: (string | null)[]; errors: string[] }> {
-  const ids: (string | null)[] = [];
-  const errors: string[] = [];
-  for (const m of messages) {
-    try {
-      ids.push((await sendEmail(m)).id);
-    } catch (e) {
-      ids.push(null);
-      errors.push(`${m.subject}: ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }
-  return { ids, errors };
-}
-
-export async function noteEmailErrors(leadId: string, errors: string[]): Promise<void> {
-  if (!errors.length) return;
-  console.error("Emails failed", { leadId, errors });
+async function suggestedFor(lead: Lead, now: Date): Promise<string[]> {
   try {
-    await recordEmailError(leadId, errors.join(" | "));
+    return suggestSlots(generateSlots(now, await bookedSlots(now)), lead.timezone);
   } catch (e) {
-    console.error("Could not record email failure", e);
+    // The reply still goes out, with the link to the times page.
+    console.error("Could not load times for the reply", e);
+    return [];
   }
+}
+
+/** Email the family the way back to their lead. */
+async function sendFamilyLink(lead: Lead, now: Date): Promise<void> {
+  const family = { to: lead.email, cc: lead.parentEmail };
+  let message: SendArgs;
+  if (lead.slot) {
+    const { pickUrl } = familyLinks(lead);
+    message = { ...family, ...confirmationEmail(lead, process.env.TRIAL_CALL_URL ?? "", pickUrl) };
+  } else {
+    const links = familyLinks(lead, await suggestedFor(lead, now));
+    message = { ...family, ...instantReplyEmail(lead, links), unsubscribeUrl: links.unsubscribeUrl };
+  }
+  const { errors } = await sendAll([message]);
+  await noteEmailErrors(lead.id, errors);
 }
 
 /**
  * Step one of the funnel. Saves the lead from a first name and an email, replies
- * at once with times to pick from, and alerts the owner. Never asks for a time.
+ * at once with times to pick from, and alerts the owner. It is built to save the
+ * lead even when something around it is broken.
  */
 export async function captureLead(
   raw: unknown,
   ctx: { ip: string | null; now: Date },
 ): Promise<CaptureResult> {
   const honeypot = (raw as { website?: unknown } | null)?.website;
-  if (typeof honeypot === "string" && honeypot !== "") {
-    // Logged so that a real family caught by an over-eager autofill can be found.
-    console.warn("Sign-up dropped by honeypot", {
-      email: String((raw as { email?: unknown }).email ?? "").slice(0, 200),
-      ip: ctx.ip,
-    });
-    return { ok: true, token: "", existing: false, booked: false };
-  }
+  const tripped = typeof honeypot === "string" && honeypot !== "";
 
-  const parsed = captureInputSchema.safeParse(raw);
+  const parsed = captureInputSchema.safeParse(
+    tripped ? { ...(raw as object), website: "" } : raw,
+  );
   if (!parsed.success) {
     return {
       ok: false,
@@ -111,83 +86,73 @@ export async function captureLead(
   }
   const input = parsed.data;
 
+  let recent = 0;
   if (ctx.ip) {
-    const recent = await countRecentByIp(ctx.ip, new Date(ctx.now.getTime() - HOUR));
-    if (recent >= MAX_PER_IP_PER_HOUR) return { ok: false, status: 429 };
-  }
-
-  const open = await findOpenByEmail(input.email, new Date(ctx.now.getTime() - REUSE_DAYS * DAY));
-  if (open) {
-    return {
-      ok: true,
-      token: leadToken(open.id, tokenSecret()),
-      existing: true,
-      booked: open.slot !== null,
-    };
-  }
-
-  const lead = await createLead(input, ctx.ip);
-
-  let suggested: string[] = [];
-  try {
-    suggested = suggestSlots(generateSlots(ctx.now, await bookedSlots(ctx.now)), lead.timezone);
-  } catch (e) {
-    // The reply still goes out, with the link to the times page.
-    console.error("Could not load times for the instant reply", e);
-  }
-  const links = familyLinks(lead, suggested);
-
-  const outgoing: SendArgs[] = [
-    { to: lead.email, cc: lead.parentEmail, ...instantReplyEmail(lead, links) },
-  ];
-  if (process.env.OWNER_EMAIL) {
-    outgoing.push({ to: process.env.OWNER_EMAIL, ...ownerLeadEmail(lead, siteUrl()) });
-  }
-  const { errors } = await sendAll(outgoing);
-  await noteEmailErrors(lead.id, errors);
-
-  return {
-    ok: true,
-    token: leadToken(lead.id, tokenSecret()),
-    existing: false,
-    booked: false,
-    created: lead,
-  };
-}
-
-/**
- * Queue the nudges for a lead who has not picked a time. Runs after the sign-up
- * response has been sent, so it re-reads the lead and does nothing if they have
- * already booked or unsubscribed.
- */
-export async function scheduleFollowUps(lead: Lead, now: Date): Promise<void> {
-  const current = await getLead(lead.id);
-  if (!current || current.stage !== "new" || current.unsubscribedAt) return;
-
-  const links = familyLinks(current, []);
-  const messages: SendArgs[] = FOLLOWUP_DAYS.slice(0, FOLLOWUP_COUNT).map((day, i) => ({
-    to: current.email,
-    cc: current.parentEmail,
-    ...followUpEmail(current, i, links),
-    scheduledAt: new Date(now.getTime() + day * DAY),
-  }));
-  const { ids, errors } = await sendAll(messages);
-  const scheduled = ids.filter((id): id is string => id !== null);
-
-  // Scheduling takes a few seconds. If the family booked or unsubscribed in that
-  // time, their booking never saw these ids, so withdraw them here.
-  const after = await getLead(current.id);
-  if (!after || after.stage !== "new" || after.unsubscribedAt) {
-    await Promise.allSettled(scheduled.map((id) => cancelEmail(id)));
-    return;
-  }
-
-  if (scheduled.length) {
     try {
-      await saveFollowupIds(current.id, scheduled);
+      recent = await countRecentByIp(ctx.ip, new Date(ctx.now.getTime() - HOUR));
     } catch (e) {
-      console.error("Could not store follow-up ids", { leadId: current.id, error: e });
+      console.error("Rate-limit check failed; continuing", e);
     }
   }
-  await noteEmailErrors(current.id, errors);
+  if (recent >= HARD_LIMIT) return { ok: false, status: 429 };
+
+  // A sign-up that looks automated is still saved, flagged and without emails,
+  // so a real person caught by autofill or shared Wi-Fi can be contacted by hand.
+  const flagged = tripped ? "honeypot" : recent >= SOFT_LIMIT ? "rate_limited" : undefined;
+  if (flagged) {
+    console.warn("Sign-up saved without emails", { reason: flagged, email: input.email, ip: ctx.ip });
+    await createLead(input, ctx.ip, flagged);
+    return { ok: true, token: "", existing: false };
+  }
+
+  let open: Lead | null = null;
+  try {
+    open = await findOpenByEmail(input.email, new Date(ctx.now.getTime() - REUSE_DAYS * DAY));
+  } catch (e) {
+    console.error("Returning-family check failed; continuing", e);
+  }
+  if (open) {
+    try {
+      await sendFamilyLink(open, ctx.now);
+    } catch (e) {
+      await noteEmailErrors(open.id, [e instanceof Error ? e.message : String(e)]);
+    }
+    return { ok: true, token: "", existing: true };
+  }
+
+  let lead: Lead;
+  try {
+    lead = await createLead(input, ctx.ip, undefined);
+  } catch (e) {
+    // Two tabs at once: the other request created the lead and is emailing it.
+    if (e instanceof DuplicateLeadError) return { ok: true, token: "", existing: true };
+    throw e;
+  }
+
+  const outgoing: SendArgs[] = [];
+  const problems: string[] = [];
+  let token = "";
+  try {
+    const links = familyLinks(lead, await suggestedFor(lead, ctx.now));
+    token = leadToken(lead.id, tokenSecret());
+    outgoing.push({
+      to: lead.email,
+      cc: lead.parentEmail,
+      ...instantReplyEmail(lead, links),
+      unsubscribeUrl: links.unsubscribeUrl,
+    });
+  } catch (e) {
+    problems.push(
+      `The family was NOT emailed, write to them yourself: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
+  if (process.env.OWNER_EMAIL) {
+    outgoing.push({ to: process.env.OWNER_EMAIL, ...ownerLeadEmail(lead, siteUrl()) });
+  } else {
+    console.error("OWNER_EMAIL is not set: the owner was not alerted about a new lead", { leadId: lead.id });
+  }
+  const { errors } = await sendAll(outgoing);
+  await noteEmailErrors(lead.id, [...problems, ...errors]);
+
+  return { ok: true, token, existing: false };
 }

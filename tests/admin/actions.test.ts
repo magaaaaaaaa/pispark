@@ -26,7 +26,6 @@ vi.mock("@/lib/leads/repo", () => {
     updateStage: vi.fn(),
     saveOwnerNotes: vi.fn(),
     saveReminderIds: vi.fn(),
-    saveFollowupIds: vi.fn(),
     countRecentLoginFailures: vi.fn(),
     recordLoginFailure: vi.fn(),
   };
@@ -63,7 +62,6 @@ beforeEach(() => {
   send.mockResolvedValue({ id: "e1" });
   cancel.mockResolvedValue();
   r.saveReminderIds.mockResolvedValue();
-  r.saveFollowupIds.mockResolvedValue();
   r.countRecentLoginFailures.mockResolvedValue(0);
   r.recordLoginFailure.mockResolvedValue();
 });
@@ -118,13 +116,6 @@ describe("setStage", () => {
     expect(await setStage(ID, stage)).toEqual({ ok: true });
     expect(cancel.mock.calls.map((c) => c[0])).toEqual(["rem_1", "rem_2"]);
     expect(r.saveReminderIds).toHaveBeenCalledWith(ID, []);
-  });
-  it("also stops the follow-up nudges when a lead becomes lost", async () => {
-    signIn();
-    r.getLead.mockResolvedValue(lead({ followupIds: ["f1", "f2"] }));
-    expect(await setStage(ID, "lost")).toEqual({ ok: true });
-    expect(cancel.mock.calls.map((c) => c[0])).toEqual(["f1", "f2"]);
-    expect(r.saveFollowupIds).toHaveBeenCalledWith(ID, []);
   });
   it("keeps reminders when a lead moves forward", async () => {
     signIn();

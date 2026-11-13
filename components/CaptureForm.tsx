@@ -57,10 +57,13 @@ export function CaptureForm() {
       const body = await res.json().catch(() => null);
 
       if (res.ok && body?.ok) {
-        const q = new URLSearchParams();
-        if (body.token) q.set("l", body.token);
-        if (!body.existing) q.set("new", "1");
-        router.push(`/pick?${q.toString()}`);
+        try {
+          window.fbq?.("track", "Lead");
+        } catch {
+          // Tracking is optional.
+        }
+        // The link to this family's lead travels in a cookie, not the address bar.
+        router.push(body.existing ? "/pick?sent=1" : "/pick?new=1");
         return;
       }
       if (res.status === 400 && Array.isArray(body?.issues)) {
@@ -94,7 +97,7 @@ export function CaptureForm() {
   });
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-4">
+    <form onSubmit={onSubmit} action="/api/lead" method="post" noValidate className="space-y-4">
       <div>
         <label htmlFor={`${uid}-firstName`} className={labelClass}>First name</label>
         <input {...field("firstName")} required maxLength={80} autoComplete="given-name" className={inputClass} />

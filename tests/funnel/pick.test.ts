@@ -10,7 +10,6 @@ vi.mock("@/lib/leads/repo", () => {
     bookedSlots: vi.fn(),
     recordEmailError: vi.fn(),
     saveReminderIds: vi.fn(),
-    saveFollowupIds: vi.fn(),
     saveDetails: vi.fn(),
     markUnsubscribed: vi.fn(),
   };
@@ -19,7 +18,7 @@ vi.mock("@/lib/email/send", () => ({ sendEmail: vi.fn(), cancelEmail: vi.fn() })
 
 import * as repo from "@/lib/leads/repo";
 import { cancelEmail, sendEmail } from "@/lib/email/send";
-import { pickSlot, reminderTimes, saveLeadDetails, unsubscribeLead } from "@/lib/funnel/pick";
+import { finishBooking, pickSlot, reminderTimes, saveLeadDetails, unsubscribeLead } from "@/lib/funnel/pick";
 import { leadToken } from "@/lib/funnel/token";
 
 const r = vi.mocked(repo);
@@ -31,17 +30,16 @@ const OTHER = "2027-03-17T00:00:00.000Z";
 const TOKEN = leadToken(lead().id, "test-secret");
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
   process.env.OWNER_EMAIL = "owner@example.com";
   process.env.SESSION_SECRET = "test-secret";
   process.env.TRIAL_CALL_URL = "https://meet.example.com/pispark";
   process.env.NEXT_PUBLIC_SITE_URL = "https://pispark.site";
-  r.getLead.mockResolvedValue(lead({ followupIds: ["f1", "f2"] }));
+  r.getLead.mockResolvedValue(lead());
   r.setTrial.mockImplementation(async (_id, slot) => bookedLead({ slot, studentName: undefined }));
   r.bookedSlots.mockResolvedValue([]);
   r.recordEmailError.mockResolvedValue();
   r.saveReminderIds.mockResolvedValue();
-  r.saveFollowupIds.mockResolvedValue();
   r.saveDetails.mockResolvedValue();
   r.markUnsubscribed.mockResolvedValue();
   send.mockImplementation(async (a) => ({ id: a.scheduledAt ? `rem_${a.scheduledAt.toISOString()}` : "now" }));
@@ -52,37 +50,23 @@ const sentTo = (to: string) => send.mock.calls.map((c) => c[0]).filter((a) => a.
 
 describe("pickSlot", () => {
   it("books the chosen time for the lead behind the link", async () => {
-    expect(await pickSlot({ token: TOKEN, slot: SLOT }, NOW)).toEqual({ ok: true, slot: SLOT });
+    expect(await pickSlot({ token: TOKEN, slot: SLOT }, NOW)).toMatchObject({ ok: true, slot: SLOT });
     expect(r.setTrial).toHaveBeenCalledWith(lead().id, SLOT);
   });
 
-  it("confirms to the family with a calendar file and tells the owner", async () => {
+  it("confirms to the family with a calendar file and tells the owner, before answering", async () => {
     await pickSlot({ token: TOKEN, slot: SLOT }, NOW);
-    const confirm = sentTo("dana@example.com").filter((a) => !a.scheduledAt);
-    expect(confirm).toHaveLength(1);
-    expect(confirm[0].ics).toContain("DTSTART:20270316T000000Z");
+    expect(sentTo("dana@example.com")).toHaveLength(1);
+    expect(sentTo("dana@example.com")[0].ics).toContain("DTSTART:20270316T000000Z");
     expect(sentTo("owner@example.com")[0].ics).toContain("DTSTART:20270316T000000Z");
   });
 
-  it("schedules reminders and remembers them", async () => {
-    await pickSlot({ token: TOKEN, slot: SLOT }, NOW);
-    expect(r.saveReminderIds).toHaveBeenCalledWith(lead().id, [
-      "rem_2027-03-15T00:00:00.000Z",
-      "rem_2027-03-15T23:00:00.000Z",
-    ]);
-  });
-
-  it("stops the follow-up nudges once a time is booked", async () => {
-    await pickSlot({ token: TOKEN, slot: SLOT }, NOW);
-    expect(cancel.mock.calls.map((c) => c[0])).toEqual(["f1", "f2"]);
-    expect(r.saveFollowupIds).toHaveBeenCalledWith(lead().id, []);
-  });
-
-  it("lets a family move their trial, cancelling the old reminders", async () => {
+  it("hands back the follow-through work: reminders to schedule, old ones to cancel", async () => {
     r.getLead.mockResolvedValue(bookedLead({ reminderIds: ["old1", "old2"] }));
-    expect(await pickSlot({ token: TOKEN, slot: OTHER }, NOW)).toEqual({ ok: true, slot: OTHER });
-    expect(cancel.mock.calls.map((c) => c[0])).toEqual(["old1", "old2"]);
-    expect(r.setTrial).toHaveBeenCalledWith(lead().id, OTHER);
+    const res = await pickSlot({ token: TOKEN, slot: OTHER }, NOW);
+    expect(res.ok && res.finish).toMatchObject({ cancelIds: ["old1", "old2"] });
+    expect(res.ok && res.finish?.lead.slot).toBe(OTHER);
+    expect(cancel).not.toHaveBeenCalled();
   });
 
   it("does nothing when the family confirms the time they already have", async () => {
@@ -92,6 +76,18 @@ describe("pickSlot", () => {
     expect(send).not.toHaveBeenCalled();
   });
 
+  it.each(["not_now", "lost"] as const)("lets a %s lead come back and book", async (stage) => {
+    r.getLead.mockResolvedValue(lead({ stage }));
+    expect(await pickSlot({ token: TOKEN, slot: SLOT }, NOW)).toMatchObject({ ok: true, slot: SLOT });
+    expect(r.setTrial).toHaveBeenCalled();
+  });
+
+  it.each(["trial_done", "offer_sent", "paying"] as const)("refuses to rebook a %s lead", async (stage) => {
+    r.getLead.mockResolvedValue(bookedLead({ stage }));
+    expect(await pickSlot({ token: TOKEN, slot: OTHER }, NOW)).toMatchObject({ ok: false, status: 400 });
+    expect(r.setTrial).not.toHaveBeenCalled();
+  });
+
   it("offers the remaining times when the slot was just taken", async () => {
     r.setTrial.mockRejectedValue(new repo.SlotTakenError());
     r.bookedSlots.mockResolvedValue([SLOT]);
@@ -99,7 +95,6 @@ describe("pickSlot", () => {
     expect(res).toMatchObject({ ok: false, status: 409 });
     if (!res.ok && res.status === 409) expect(res.slots).not.toContain(SLOT);
     expect(send).not.toHaveBeenCalled();
-    expect(cancel).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -117,16 +112,41 @@ describe("pickSlot", () => {
     expect(r.getLead).not.toHaveBeenCalled();
   });
 
-  it("refuses to rebook a lead who is already a paying student", async () => {
-    r.getLead.mockResolvedValue(bookedLead({ stage: "paying" }));
-    expect(await pickSlot({ token: TOKEN, slot: OTHER }, NOW)).toMatchObject({ ok: false, status: 400 });
-    expect(r.setTrial).not.toHaveBeenCalled();
-  });
-
   it("keeps the booking and records the problem when email fails", async () => {
     send.mockRejectedValue(new Error("email down"));
-    expect(await pickSlot({ token: TOKEN, slot: SLOT }, NOW)).toEqual({ ok: true, slot: SLOT });
+    expect(await pickSlot({ token: TOKEN, slot: SLOT }, NOW)).toMatchObject({ ok: true, slot: SLOT });
     expect(r.recordEmailError).toHaveBeenCalledWith(lead().id, expect.stringContaining("email down"));
+  });
+});
+
+describe("finishBooking", () => {
+  const booked = bookedLead();
+
+  it("schedules both reminders and remembers them", async () => {
+    await finishBooking({ lead: booked, cancelIds: [] }, NOW);
+    expect(r.saveReminderIds).toHaveBeenCalledWith(booked.id, [
+      "rem_2027-03-15T00:00:00.000Z",
+      "rem_2027-03-15T23:00:00.000Z",
+    ]);
+  });
+
+  it("cancels the reminders for the previous time", async () => {
+    await finishBooking({ lead: booked, cancelIds: ["old1", "old2"] }, NOW);
+    expect(cancel.mock.calls.map((c) => c[0])).toEqual(["old1", "old2"]);
+  });
+
+  it("records it when an old reminder could not be cancelled, so the owner can warn the family", async () => {
+    cancel.mockRejectedValueOnce(new Error("rate limited"));
+    await finishBooking({ lead: booked, cancelIds: ["old1", "old2"] }, NOW);
+    expect(r.recordEmailError).toHaveBeenCalledWith(booked.id, expect.stringContaining("old1"));
+    expect(r.saveReminderIds).toHaveBeenCalled();
+  });
+
+  it("records a reminder that could not be scheduled and keeps the ones that were", async () => {
+    send.mockRejectedValueOnce(new Error("rate limited"));
+    await finishBooking({ lead: booked, cancelIds: [] }, NOW);
+    expect(r.saveReminderIds).toHaveBeenCalledWith(booked.id, ["rem_2027-03-15T23:00:00.000Z"]);
+    expect(r.recordEmailError).toHaveBeenCalledWith(booked.id, expect.stringContaining("rate limited"));
   });
 });
 
@@ -158,16 +178,9 @@ describe("saveLeadDetails", () => {
 });
 
 describe("unsubscribeLead", () => {
-  it("cancels the pending nudges and marks the lead", async () => {
+  it("marks the lead so no further nudge is sent", async () => {
     expect(await unsubscribeLead(TOKEN)).toBe(true);
-    expect(cancel.mock.calls.map((c) => c[0])).toEqual(["f1", "f2"]);
     expect(r.markUnsubscribed).toHaveBeenCalledWith(lead().id);
-    expect(r.saveFollowupIds).toHaveBeenCalledWith(lead().id, []);
-  });
-  it("still marks the lead when a nudge cannot be cancelled", async () => {
-    cancel.mockRejectedValue(new Error("already sent"));
-    expect(await unsubscribeLead(TOKEN)).toBe(true);
-    expect(r.markUnsubscribed).toHaveBeenCalled();
   });
   it("rejects a forged link", async () => {
     expect(await unsubscribeLead("nope")).toBe(false);

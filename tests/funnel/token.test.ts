@@ -24,6 +24,9 @@ describe("lead link token", () => {
     expect(readLeadToken(bad as string | undefined, SECRET)).toBeNull();
   });
   it("rejects everything when no secret is configured", () => {
-    expect(readLeadToken(leadToken(ID, ""), "")).toBeNull();
+    expect(readLeadToken(token, "")).toBeNull();
+  });
+  it("refuses to make a link that could not be verified", () => {
+    expect(() => leadToken(ID, "")).toThrow(/SESSION_SECRET/);
   });
 });

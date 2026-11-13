@@ -69,6 +69,11 @@ export default async function OwnerHome() {
                         <Link href={`/owner/leads/${l.id}`} className="font-semibold underline">
                           {l.contactName}
                         </Link>
+                        {l.flagged && (
+                          <span className="ml-2 rounded bg-spark px-1.5 py-0.5 text-xs font-bold text-ink">
+                            check by hand
+                          </span>
+                        )}
                         {l.emailError && (
                           <span className="ml-2 rounded bg-error px-1.5 py-0.5 text-xs font-bold text-white" title={l.emailError}>
                             email failed
