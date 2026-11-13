@@ -21,6 +21,14 @@ A two-step funnel built so that no lead is lost:
 
 The owner tracks leads through stages at `/owner` and sends the post-trial offer from there.
 
+## Content engine
+
+Social posts are rows in the `posts` table: structured slides plus a caption. They are
+written weekly by following `docs/content-playbook.md`, checked against the rules in
+`lib/content/schema.ts`, drawn as JPEGs on demand (`/api/posts/[id]/[n]`), approved by the
+owner at `/owner/posts`, and published once a day by `/api/cron/content` to Instagram and
+Facebook (`lib/content/meta.ts`). Nothing is published without approval.
+
 The original design is in `docs/2026-11-13-pispark-marketing-design.md`; the funnel described
 here replaced its nine-field booking form on 2026-11-14.
 
@@ -55,6 +63,7 @@ npm run build
 | `ADMIN_PASSWORD` | Password for `/owner`. Use a long one |
 | `SESSION_SECRET` | Random string, 32+ characters. Signs the owner session cookie and the links in emails. Changing it breaks links already sent |
 | `CRON_SECRET` | Random string. Vercel sends it with the daily follow-up job; the job refuses to run without it |
+| `META_PAGE_TOKEN` | Optional. Facebook Page access token; lets the daily job publish approved posts to the Page and its linked Instagram account. See `docs/owner-guide.md` |
 | `NEXT_PUBLIC_SITE_URL` | `https://pispark.site` |
 | `NEXT_PUBLIC_META_PIXEL_ID` | Optional. When set, a cookie notice appears and the Pixel loads after consent |
 
@@ -68,6 +77,8 @@ with no policies: only the server, using the service-role key, can read or write
 - `lib/config.ts` — price, trial length, trial windows (owner time, UTC+5), lead stages
 - `lib/booking/` — slot generation
 - `lib/funnel/` — capture, time picking, follow-ups, signed link tokens
+- `lib/content/` — post rules, slide rendering, Meta publishing
+- `content/examples/` — complete example weeks of posts; `npm test` checks them
 - `lib/leads/` — input validation and all database access
 - `lib/email/` — email text, calendar file, sending
 - `app/owner/` — private owner area; `proxy.ts` guards it and every action re-checks the session
