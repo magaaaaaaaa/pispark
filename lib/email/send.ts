@@ -1,6 +1,9 @@
 import "server-only";
 import { Resend } from "resend";
 
+/** The owner stored the key in Vercel under the name RESEND; accept both names. */
+const resendKey = () => process.env.RESEND_API_KEY || process.env.RESEND;
+
 export interface SendArgs {
   to: string;
   cc?: string;
@@ -14,7 +17,7 @@ export interface SendArgs {
 }
 
 export async function sendEmail(args: SendArgs): Promise<{ id: string }> {
-  const key = process.env.RESEND_API_KEY;
+  const key = resendKey();
   if (!key) throw new Error("Email is not configured: set RESEND_API_KEY");
   const from = process.env.EMAIL_FROM || "PiSpark <book_a_lesson@pispark.site>";
   const { data, error } = await new Resend(key).emails.send({
@@ -42,7 +45,7 @@ export async function sendEmail(args: SendArgs): Promise<{ id: string }> {
 
 /** Cancel an email scheduled with scheduledAt. Throws if it cannot be cancelled. */
 export async function cancelEmail(id: string): Promise<void> {
-  const key = process.env.RESEND_API_KEY;
+  const key = resendKey();
   if (!key) throw new Error("Email is not configured: set RESEND_API_KEY");
   const { error } = await new Resend(key).emails.cancel(id);
   if (error) throw new Error(error.message);
