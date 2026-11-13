@@ -20,7 +20,8 @@ export function validInput(over: Partial<LeadInput> = {}): LeadInput {
 }
 
 export function lead(over: Partial<Lead> = {}): Lead {
-  const { website: _w, ...rest } = validInput();
+  const rest: Omit<LeadInput, "website"> & { website?: string } = validInput();
+  delete rest.website;
   return {
     ...rest,
     id: "11111111-2222-3333-4444-555555555555",
