@@ -20,7 +20,7 @@ export function buildIcs(lead: Lead, callUrl: string): string {
     `DTSTAMP:${stamp(new Date(lead.createdAt))}`,
     `DTSTART:${stamp(start)}`,
     `DTEND:${stamp(end)}`,
-    `SUMMARY:${esc(`PiSpark SAT math trial lesson - ${lead.studentName}`)}`,
+    `SUMMARY:${esc(`PiSpark SAT math trial lesson - ${lead.contactName}`)}`,
     `DESCRIPTION:${esc(callUrl ? `Video call: ${callUrl}` : "The video call link will be sent by email.")}`,
     ...(callUrl ? [`LOCATION:${esc(callUrl)}`] : []),
     "END:VEVENT",

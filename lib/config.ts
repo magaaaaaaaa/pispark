@@ -27,3 +27,6 @@ export type Stage = (typeof STAGES)[number];
 export const CONTACT_EMAIL = "book_a_lesson@pispark.site";
 export const DISCLAIMER =
   "SAT is a trademark of College Board, which is not affiliated with PiSpark.";
+
+/** Required by US law in the footer of marketing email. */
+export const POSTAL_ADDRESS = "PiSpark, Syganak 4, Astana 010000, Kazakhstan";

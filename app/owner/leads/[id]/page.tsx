@@ -14,25 +14,27 @@ export default async function LeadPage({ params }: PageProps<"/owner/leads/[id]"
   if (!lead) notFound();
 
   const rows: [string, string][] = [
-    ["Trial, your time", lead.slot ? ownerTime(lead.slot) : "No time chosen. Email them to agree one."],
+    ["Trial, your time", lead.slot ? ownerTime(lead.slot) : "No time picked yet. A personal email now makes a booking much more likely."],
     ["Trial, their time", lead.slot ? formatLocal(lead.slot, lead.timezone) : "-"],
-    ["Booked by", `${lead.contactName} (${lead.role})`],
+    ["Signed up by", `${lead.contactName} (${lead.role})`],
     ["Email", lead.email],
     ["Parent email", lead.parentEmail ?? "-"],
-    ["Grade", lead.grade],
+    ["Student", lead.studentName ?? "not given"],
+    ["Grade", lead.grade ?? "not given"],
     ["Planned test date", lead.testDate ?? "not given"],
     ["Current math score", lead.currentScore?.toString() ?? "not given"],
     ["Target math score", lead.targetScore?.toString() ?? "not given"],
     ["Time zone", lead.timezone],
     ["Source", [lead.source.utmSource, lead.source.utmMedium, lead.source.utmCampaign, lead.source.utmContent].filter(Boolean).join(" / ") || "direct"],
     ["Message", lead.message ?? "-"],
-    ["Booked on", ownerTime(lead.createdAt)],
+    ["Signed up", ownerTime(lead.createdAt)],
+    ["Follow-up emails", lead.unsubscribedAt ? "Unsubscribed" : `${lead.followupIds.length} still scheduled`],
   ];
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-10">
       <p><Link href="/owner" className="text-sm font-semibold underline">All leads</Link></p>
-      <h1 className="mt-2 font-display text-3xl font-extrabold text-ink">{lead.studentName}</h1>
+      <h1 className="mt-2 font-display text-3xl font-extrabold text-ink">{lead.contactName}</h1>
 
       {lead.emailError && (
         <p role="alert" className="mt-4 rounded-md border-2 border-error bg-white p-3 text-error">

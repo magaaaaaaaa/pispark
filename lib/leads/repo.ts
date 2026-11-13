@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Stage } from "@/lib/config";
-import type { Lead, LeadInput } from "./schema";
+import type { CaptureInput, Lead, LeadDetails } from "./schema";
 
 export class SlotTakenError extends Error {
   constructor() {
@@ -30,12 +30,12 @@ function toLead(r: Row): Lead {
   return {
     id: r.id as string,
     stage: r.stage as Stage,
-    role: r.role as Lead["role"],
+    role: (r.role as Lead["role"] | null) ?? "parent",
     contactName: r.contact_name as string,
-    studentName: r.student_name as string,
+    studentName: opt<string>(r.student_name),
     email: r.email as string,
     parentEmail: opt<string>(r.parent_email),
-    grade: r.grade as Lead["grade"],
+    grade: opt<Lead["grade"]>(r.grade),
     testDate: opt<string>(r.test_date),
     currentScore: opt<number>(r.current_score),
     targetScore: opt<number>(r.target_score),
@@ -51,6 +51,8 @@ function toLead(r: Row): Lead {
     ownerNotes: (r.owner_notes as string | null) ?? null,
     emailError: (r.email_error as string | null) ?? null,
     reminderIds: (r.reminder_ids as string[] | null) ?? [],
+    followupIds: (r.followup_ids as string[] | null) ?? [],
+    unsubscribedAt: iso(r.unsubscribed_at),
     createdAt: iso(r.created_at) as string,
   };
 }
@@ -59,29 +61,35 @@ function fail(error: { message?: string } | null | undefined): void {
   if (error) throw new Error(error.message ?? "Database error");
 }
 
-export async function createLead(input: LeadInput, ip: string | null): Promise<Lead> {
+export async function createLead(input: CaptureInput, ip: string | null): Promise<Lead> {
   const { data, error } = await client()
     .from("leads")
     .insert({
-      stage: input.slot ? "trial_booked" : "new",
+      stage: "new",
       role: input.role,
-      contact_name: input.contactName,
-      student_name: input.studentName,
+      contact_name: input.firstName,
       email: input.email,
       parent_email: input.parentEmail ?? null,
-      grade: input.grade,
-      test_date: input.testDate ?? null,
-      current_score: input.currentScore ?? null,
-      target_score: input.targetScore ?? null,
       timezone: input.timezone,
-      trial_at: iso(input.slot),
-      message: input.message ?? null,
       utm_source: input.source.utmSource ?? null,
       utm_medium: input.source.utmMedium ?? null,
       utm_campaign: input.source.utmCampaign ?? null,
       utm_content: input.source.utmContent ?? null,
       ip,
     })
+    .select()
+    .single();
+  fail(error);
+  return toLead(data as Row);
+}
+
+/** Book (or move) the lead's trial. Throws SlotTakenError if another lead holds the slot. */
+export async function setTrial(id: string, slot: string): Promise<Lead> {
+  if (!UUID.test(id)) throw new Error("Unknown lead");
+  const { data, error } = await client()
+    .from("leads")
+    .update({ trial_at: iso(slot), stage: "trial_booked" })
+    .eq("id", id)
     .select()
     .single();
   if (error?.code === "23505") throw new SlotTakenError();
@@ -106,14 +114,15 @@ export async function listLeads(): Promise<Lead[]> {
   return ((data as Row[] | null) ?? []).map(toLead);
 }
 
-export async function findUpcomingByEmail(email: string, now: Date): Promise<Lead | null> {
+/** The family's most recent lead that is still in play, so a second sign-up reuses it. */
+export async function findOpenByEmail(email: string, since: Date): Promise<Lead | null> {
   const { data, error } = await client()
     .from("leads")
     .select("*")
     .eq("email", email)
-    .gt("trial_at", now.toISOString())
-    .not("stage", "in", FREED)
-    .order("trial_at", { ascending: true })
+    .gte("created_at", since.toISOString())
+    .in("stage", ["new", "trial_booked"])
+    .order("created_at", { ascending: false })
     .limit(1);
   fail(error);
   const rows = (data as Row[] | null) ?? [];
@@ -166,4 +175,20 @@ export async function countRecentLoginFailures(ip: string, since: Date): Promise
 export async function recordLoginFailure(ip: string): Promise<void> {
   const { error } = await client().from("owner_login_failures").insert({ ip });
   fail(error);
+}
+
+export const saveFollowupIds = (id: string, ids: string[]) => patch(id, { followup_ids: ids });
+export const markUnsubscribed = (id: string) =>
+  patch(id, { unsubscribed_at: new Date().toISOString() });
+
+/** Store the optional extras. Fields left out are not touched. */
+export async function saveDetails(id: string, d: LeadDetails): Promise<void> {
+  const values: Row = {};
+  if (d.studentName !== undefined) values.student_name = d.studentName;
+  if (d.grade !== undefined) values.grade = d.grade;
+  if (d.testDate !== undefined) values.test_date = d.testDate;
+  if (d.currentScore !== undefined) values.current_score = d.currentScore;
+  if (d.targetScore !== undefined) values.target_score = d.targetScore;
+  if (d.message !== undefined) values.message = d.message;
+  if (Object.keys(values).length) await patch(id, values);
 }

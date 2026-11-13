@@ -16,12 +16,13 @@ export default function Privacy() {
       <h2>What we collect</h2>
       <ul>
         <li>
-          What you type into the booking form: your name, the student&apos;s name, email
-          addresses, grade, planned test date, scores, time zone, the lesson time you pick and any
-          message you add.
+          What you type into our forms: your first name and email address, a parent&apos;s email
+          if a student signs up, the lesson time you pick, and anything you choose to add
+          afterwards (student&apos;s name, grade, planned test date, scores, a message).
         </li>
+        <li>Your time zone, as reported by your browser, so times are shown correctly.</li>
         <li>How you reached the site, if the link you followed carried campaign tags.</li>
-        <li>Your IP address at the moment you book, to stop automated abuse of the form.</li>
+        <li>Your IP address at the moment you sign up, to stop automated abuse of the form.</li>
         <li>
           If you allow it in the cookie notice, a Meta cookie that records page views and
           bookings. If you decline, it is never loaded.
@@ -32,9 +33,13 @@ export default function Privacy() {
       <ul>
         <li>To arrange and teach the trial lesson and any lessons after it.</li>
         <li>To email you confirmations, reminders and the follow-up after the trial.</li>
+        <li>
+          If you asked for a trial but have not picked a time, to send up to five short emails
+          over two weeks about booking it. Every one has a link that stops them at once.
+        </li>
         <li>To understand which posts and ads lead to bookings.</li>
       </ul>
-      <p>We do not sell your data and we do not send marketing newsletters.</p>
+      <p>We do not sell your data, and we do not send newsletters.</p>
 
       <h2>Who handles it for us</h2>
       <ul>

@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { Stage } from "@/lib/config";
 
 const blankToUndefined = (v: unknown) =>
-  typeof v === "string" && v.trim() === "" ? undefined : v;
+  v === null || (typeof v === "string" && v.trim() === "") ? undefined : v;
 
 /** Short free text that ends up in email subjects: no links, no control characters. */
 const plainLine = (v: string) =>
@@ -21,8 +21,12 @@ const score = z
   .max(800)
   .refine((n) => n % 10 === 0, "SAT section scores are multiples of 10");
 const utm = z.preprocess(blankToUndefined, z.string().max(100).optional());
+const optional = <T extends z.ZodType>(t: T) => z.preprocess(blankToUndefined, t.optional());
 
-function isTimeZone(tz: string): boolean {
+export const DEFAULT_TIMEZONE = "America/New_York";
+
+export function isTimeZone(tz: unknown): tz is string {
+  if (typeof tz !== "string" || !tz || tz === "Etc/Unknown") return false;
   try {
     new Intl.DateTimeFormat("en-US", { timeZone: tz });
     return true;
@@ -31,20 +35,15 @@ function isTimeZone(tz: string): boolean {
   }
 }
 
-export const leadInputSchema = z
+/** Step one of the funnel: the least we need to never lose the lead. */
+export const captureInputSchema = z
   .object({
-    role: z.enum(["parent", "student"]),
-    contactName: name,
-    studentName: name,
+    role: z.enum(["parent", "student"]).default("parent"),
+    firstName: name,
     email,
-    parentEmail: z.preprocess(blankToUndefined, email.optional()),
-    grade: z.enum(["9", "10", "11", "12", "other"]),
-    testDate: z.preprocess(blankToUndefined, z.string().trim().max(40).refine(plainLine, "Use plain text, without links").optional()),
-    currentScore: z.preprocess((v) => (v === null ? undefined : v), score.optional()),
-    targetScore: z.preprocess((v) => (v === null ? undefined : v), score.optional()),
-    timezone: z.string().min(1).max(64).refine(isTimeZone, "Unknown time zone"),
-    slot: z.string().max(40).nullable(),
-    message: z.preprocess(blankToUndefined, z.string().trim().max(1000).optional()),
+    parentEmail: optional(email),
+    // A browser can report a zone this server does not know; that must never block a sign-up.
+    timezone: z.preprocess((v) => (isTimeZone(v) ? v : DEFAULT_TIMEZONE), z.string()),
     source: z
       .object({ utmSource: utm, utmMedium: utm, utmCampaign: utm, utmContent: utm })
       .default({}),
@@ -55,36 +54,66 @@ export const leadInputSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["parentEmail"],
-        message: "A parent's email is required when a student books",
+        message: "Add a parent's email so we can copy them in",
       });
     }
   });
 
-export interface LeadInput {
+/** Optional extras, asked only after the lead is saved. */
+export const detailsInputSchema = z.object({
+  studentName: optional(name),
+  grade: optional(z.enum(["9", "10", "11", "12", "other"])),
+  testDate: optional(z.string().trim().max(40).refine(plainLine, "Use plain text, without links")),
+  currentScore: optional(score),
+  targetScore: optional(score),
+  message: optional(z.string().trim().max(1000)),
+});
+
+export type Source = {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+};
+
+export interface CaptureInput {
   role: "parent" | "student";
-  contactName: string;
-  studentName: string;
+  firstName: string;
   email: string;
   parentEmail?: string;
-  grade: "9" | "10" | "11" | "12" | "other";
-  testDate?: string;
-  currentScore?: number;
-  targetScore?: number;
   timezone: string;
-  /** UTC ISO start of the trial; null means "none of these times work". */
-  slot: string | null;
-  message?: string;
-  source: { utmSource?: string; utmMedium?: string; utmCampaign?: string; utmContent?: string };
+  source: Source;
   /** Honeypot. Must be empty. */
   website: string;
 }
 
-export interface Lead extends Omit<LeadInput, "website"> {
+export interface LeadDetails {
+  studentName?: string;
+  grade?: "9" | "10" | "11" | "12" | "other";
+  testDate?: string;
+  currentScore?: number;
+  targetScore?: number;
+  message?: string;
+}
+
+export interface Lead extends LeadDetails {
   id: string;
   stage: Stage;
+  role: "parent" | "student";
+  /** First name of whoever signed up. */
+  contactName: string;
+  email: string;
+  parentEmail?: string;
+  timezone: string;
+  /** UTC ISO start of the trial; null until a time is picked. */
+  slot: string | null;
+  source: Source;
   ownerNotes: string | null;
   emailError: string | null;
   /** Ids of scheduled reminder emails that have not been cancelled. */
   reminderIds: string[];
+  /** Ids of scheduled follow-up nudges that have not been cancelled. */
+  followupIds: string[];
+  unsubscribedAt: string | null;
   createdAt: string;
 }

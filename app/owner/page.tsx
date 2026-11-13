@@ -56,7 +56,7 @@ export default async function OwnerHome() {
               <table className="w-full text-left text-base">
                 <thead className="border-b-2 border-ink text-sm text-ink-soft">
                   <tr>
-                    <th className="p-3">Student</th>
+                    <th className="p-3">Name</th>
                     <th className="p-3">Stage</th>
                     <th className="p-3">Trial (Astana time)</th>
                     <th className="p-3">Source</th>
@@ -67,7 +67,7 @@ export default async function OwnerHome() {
                     <tr key={l.id}>
                       <td className="p-3">
                         <Link href={`/owner/leads/${l.id}`} className="font-semibold underline">
-                          {l.studentName}
+                          {l.contactName}
                         </Link>
                         {l.emailError && (
                           <span className="ml-2 rounded bg-error px-1.5 py-0.5 text-xs font-bold text-white" title={l.emailError}>
@@ -76,7 +76,7 @@ export default async function OwnerHome() {
                         )}
                       </td>
                       <td className="p-3">{STAGE_LABELS[l.stage]}</td>
-                      <td className="p-3">{l.slot ? ownerTime(l.slot) : "No time chosen"}</td>
+                      <td className="p-3">{l.slot ? ownerTime(l.slot) : "No time picked yet"}</td>
                       <td className="p-3 text-ink-soft">{source(l)}</td>
                     </tr>
                   ))}
