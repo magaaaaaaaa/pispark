@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { CONTACT_EMAIL, TRIAL_MINUTES } from "@/lib/config";
 import { suggestSlots } from "@/lib/funnel/suggest";
 import { INSTAGRAM_DM_URL, MESSENGER_URL } from "@/lib/links";
+import { upcomingSatDates } from "@/lib/sat-dates";
 
 type SlotState = { status: "loading" } | { status: "ready"; slots: string[] } | { status: "failed" };
 
@@ -298,8 +299,14 @@ function DetailsForm({ token }: { token: string }) {
           <input id="targetScore" name="targetScore" type="number" inputMode="numeric" min={200} max={800} step={10} placeholder="200–800" className={inputClass} />
         </div>
         <div className="sm:col-span-2">
-          <label htmlFor="testDate" className={labelClass}>Planned SAT date</label>
-          <input id="testDate" name="testDate" maxLength={40} placeholder="March 2027" className={inputClass} />
+          <label htmlFor="testDate" className={labelClass}>Which SAT are you planning to take?</label>
+          <select id="testDate" name="testDate" defaultValue="" className={inputClass}>
+            <option value="">Choose…</option>
+            {upcomingSatDates(new Date()).map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+            <option value="Not sure yet">Not sure yet</option>
+          </select>
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="message" className={labelClass}>Anything else we should know?</label>
