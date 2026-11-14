@@ -129,8 +129,9 @@ describe("offerEmail", () => {
   it("carries the owner's notes and the offer", () => {
     const e = offerEmail(bookedLead(), NOTES, SITE);
     expect(e.text).toContain(NOTES);
-    expect(e.text).toContain("$17/hour");
-    expect(e.text).toContain("8 lessons");
+    expect(e.text).toContain("Weekly (1 lesson a week): $139 per 4 weeks");
+    expect(e.text).toContain("Test Sprint");
+    expect(e.text).not.toMatch(/an hour|\/hour/);
   });
   it("keeps line breaks from the notes in the html", () => {
     expect(offerEmail(bookedLead(), "First point.\nSecond point.", SITE).html).toContain("First point.<br>Second point.");

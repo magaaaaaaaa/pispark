@@ -1,9 +1,12 @@
 import {
   CONTACT_EMAIL,
   DISCLAIMER,
-  PACK_SIZE,
+  FOUNDING_FAMILIES,
+  FROM_PRICE_USD,
+  LESSON_MINUTES,
+  PLANS,
   POSTAL_ADDRESS,
-  PRICE_PER_HOUR_USD,
+  planPrice,
   TRIAL_MINUTES,
 } from "@/lib/config";
 import type { Lead } from "@/lib/leads/schema";
@@ -148,9 +151,10 @@ const FOLLOW_UPS: { subject: (n: string) => string; body: (n: string) => string[
     ],
   },
   {
-    subject: () => `$${PRICE_PER_HOUR_USD} an hour, and why`,
+    subject: () => `How our plans work, and why they cost less`,
     body: () => [
-      `People ask how lessons can cost $${PRICE_PER_HOUR_USD} an hour when most SAT tutors charge several times that. The short answer: we are a small school based in Kazakhstan, we teach online, and we are new, so the first students get the founding rate.`,
+      `After the free lesson, a student gets a fixed weekly time with the same teacher, homework between lessons, a practice test every 4 weeks and a progress report for the parent. Plans start at $${FROM_PRICE_USD} per 4 weeks, and you can cancel any time.`,
+      `That is less than most SAT tutors charge because we are a small online school based in Kazakhstan, and we are new: our first ${FOUNDING_FAMILIES} families keep the founding price for as long as they stay.`,
       `The trial lesson is free either way, and you decide afterwards.`,
     ],
   },
@@ -287,8 +291,10 @@ export function offerEmail(lead: Lead, notes: string, siteUrl: string): Email {
       `Hi ${lead.contactName},`,
       `Thank you for the trial lesson. Here is what we saw and what we suggest:`,
       notes.trim(),
-      `Lessons are 1-on-1 and live, at the $${PRICE_PER_HOUR_USD}/hour founding-student rate. They are booked in packs of ${PACK_SIZE} lessons ($${PRICE_PER_HOUR_USD * PACK_SIZE} per pack), usually one or two lessons a week.`,
-      `To start, reply to this email with the days and times that suit you, and we will send the schedule and an invoice.`,
+      `Lessons are ${LESSON_MINUTES} minutes, live and 1-on-1, at a fixed time each week. Founding prices:`,
+      PLANS.map((p) => `${p.name} (${p.what}): ${planPrice(p)}`).join("\n"),
+      `Weekly and Twice a week are paid every 4 weeks and can be cancelled any time before the next payment.`,
+      `To start, reply with the plan you want and the days and times that suit you. We will confirm the weekly time and send an invoice.`,
       `More about how lessons work: ${siteUrl}/`,
     ],
     "family",

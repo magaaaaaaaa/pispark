@@ -1,7 +1,7 @@
 import { CaptureForm } from "@/components/CaptureForm";
 import { HeroProblem } from "@/components/HeroProblem";
 import { StickyCta } from "@/components/StickyCta";
-import { PACK_SIZE, PRICE_PER_HOUR_USD, TRIAL_MINUTES } from "@/lib/config";
+import { FOUNDING_FAMILIES, FROM_PRICE_USD, LESSON_MINUTES, NOTICE_HOURS, PLANS, TRIAL_MINUTES } from "@/lib/config";
 import { INSTAGRAM_DM_URL, MESSENGER_URL } from "@/lib/links";
 
 const h2 = "font-display text-3xl font-extrabold tracking-tight text-ink sm:text-5xl";
@@ -28,8 +28,20 @@ const faqs = [
     a: "Yes. No card, no deposit, and no obligation afterwards. It is how we show you a lesson instead of describing one.",
   },
   {
-    q: `Why is it only $${PRICE_PER_HOUR_USD} an hour?`,
-    a: "We are a small online school based in Kazakhstan, and we are new. Our costs are lower than a US tutoring center's, and our first students get the founding rate.",
+    q: "Why does it cost less than most SAT tutors?",
+    a: `We are a small online school based in Kazakhstan, and we are new. Our costs are lower than a US tutoring center's, and our first ${FOUNDING_FAMILIES} families keep the founding price for as long as they stay.`,
+  },
+  {
+    q: "When are the lessons?",
+    a: `After the free lesson you pick a fixed weekly time (two for the twice-a-week and Sprint plans), shown in your own time zone: weekday evenings or weekend mornings in the US. It stays yours every week. With ${NOTICE_HOURS} hours' notice a lesson can move once every 4 weeks.`,
+  },
+  {
+    q: "What happens between lessons?",
+    a: "30 to 45 minutes of homework a week from College Board's free official question bank. Every 4 weeks the student takes a practice test in Bluebook, the app used on test day, and the parent gets a short progress report.",
+  },
+  {
+    q: "Can we stop?",
+    a: "Yes. The Weekly and Twice a week plans are paid every 4 weeks and can be cancelled any time before the next payment. You can also pause for up to two weeks for holidays or exams.",
   },
   {
     q: "Is this for the digital SAT?",
@@ -59,8 +71,8 @@ export default function Home() {
               is true: we really, really like math.
             </p>
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-white/80">
-              Your first {TRIAL_MINUTES}-minute lesson is free. After that it is $
-              {PRICE_PER_HOUR_USD} an hour.
+              Your first {TRIAL_MINUTES}-minute lesson is free. After that, plans start at $
+              {FROM_PRICE_USD} per 4 weeks.
             </p>
           </div>
           <div id="start" data-signup className="scroll-mt-4 rounded-2xl border-2 border-ink bg-white p-5 shadow-[6px_6px_0_var(--color-spark)] sm:p-7">
@@ -103,20 +115,32 @@ export default function Home() {
       </section>
 
       <section className="border-y-2 border-ink bg-white">
-        <div className={`${section} grid gap-10 lg:grid-cols-[auto_1fr] lg:items-center lg:gap-16`}>
-          <p className="font-display text-8xl font-extrabold tracking-tight text-ink sm:text-9xl">
-            ${PRICE_PER_HOUR_USD}
-            <span className="block text-2xl font-bold text-ink-soft">per hour, 1-on-1</span>
+        <div className={section}>
+          <h2 className={h2}>One teacher, one fixed time, every week.</h2>
+          <p className="mt-5 max-w-prose text-lg leading-relaxed text-ink">
+            Every lesson is {LESSON_MINUTES} minutes, live and 1-on-1. Homework between lessons, a
+            practice test every 4 weeks and a progress report for the parent are included. These are
+            founding prices for our first {FOUNDING_FAMILIES} families, kept for as long as you stay.
           </p>
-          <div>
-            <h2 className={h2}>Private tutoring at a group-class price.</h2>
-            <p className="mt-5 max-w-prose text-lg leading-relaxed text-ink">
-              This is the ${PRICE_PER_HOUR_USD}/hour founding-student rate for our first students.
-              Lessons are booked in packs of {PACK_SIZE} lessons (${PRICE_PER_HOUR_USD * PACK_SIZE}{" "}
-              per pack), every lesson is live and 1-on-1, and unused lessons are refunded if you
-              stop.
-            </p>
-          </div>
+          <ul className="mt-8 grid gap-5 md:grid-cols-3">
+            {PLANS.map((p) => (
+              <li key={p.name} className="rounded-2xl border-2 border-ink bg-white p-6 shadow-[6px_6px_0_var(--color-spark)]">
+                <h3 className="text-xl font-bold text-ink">{p.name}</h3>
+                <p className="mt-1 text-base text-ink-soft">{p.what}</p>
+                <p className="mt-4 font-display text-5xl font-extrabold tracking-tight text-ink">
+                  ${p.founding}
+                  <span className="ml-2 text-lg font-bold text-ink-soft">{p.once ? "once" : "per 4 weeks"}</span>
+                </p>
+                <p className="mt-1 text-base text-ink-soft">
+                  <s>${p.regular}</s> regular price
+                </p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 max-w-prose text-base leading-relaxed text-ink-soft">
+            Not sure which? The free lesson ends with a recommendation based on the test date and the
+            score you are aiming for.
+          </p>
         </div>
       </section>
 

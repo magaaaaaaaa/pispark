@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import sharp from "sharp";
-import { DISCLAIMER, PRICE_PER_HOUR_USD, TRIAL_MINUTES } from "@/lib/config";
+import { DISCLAIMER, FROM_PRICE_USD, TRIAL_MINUTES } from "@/lib/config";
 import type { Block, Slide } from "./schema";
 
 /** Instagram's portrait format. */
@@ -152,7 +152,7 @@ function BlockView({ block, s, dark }: { block: Block; s: number; dark: boolean 
             Your first lesson is free.
           </div>
           <div style={{ display: "flex", fontFamily: BODY, fontSize: 46, lineHeight: 1.35, color: fg }}>
-            {`${TRIAL_MINUTES} minutes, live, 1-on-1 SAT math. Then $${PRICE_PER_HOUR_USD} an hour.`}
+            {`${TRIAL_MINUTES} minutes, live, 1-on-1 SAT math. Plans from $${FROM_PRICE_USD} per 4 weeks.`}
           </div>
           <div
             style={{

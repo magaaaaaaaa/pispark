@@ -67,7 +67,8 @@ The best thing to sell right now: **start in late November / December on Weekly,
 3. **If the teacher cancels:** always made up, or refunded.
 4. **Pause:** up to 2 weeks per 4-week cycle (holidays, exams); the next payment date moves back.
 5. **Cancel:** any time before the next payment date. Nothing more is charged; no refunds for the
-   current 4 weeks except lessons the teacher cancelled.
+   current 4 weeks except lessons the teacher cancelled. A Test Sprint stopped early: lessons not
+   yet taken are refunded on request (it is one large payment up front).
 6. Unused lessons do not roll over past the end of the next cycle.
 
 ## How studying works

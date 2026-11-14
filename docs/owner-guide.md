@@ -29,7 +29,7 @@ People who will not fill in a form will send a message. Meta's own tools can ans
    > A real person will reply here soon too.
 
 3. **Frequently asked questions**: add three:
-   - "How much is it?" → "$17 an hour, 1-on-1, live. The first 25-minute lesson is free."
+   - "How much is it?" → "The first 25-minute lesson is free. After that, plans start at $139 per 4 weeks for a fixed weekly 1-on-1 lesson, cancel any time. All plans: pispark.site"
    - "How does the free lesson work?" → "Leave your email at pispark.site/book_a_lesson, pick a
      time, and we meet on a video call. No card."
    - "Is this for the digital SAT?" → "Yes, including how to use the built-in Desmos calculator."

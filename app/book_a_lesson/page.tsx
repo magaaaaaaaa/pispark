@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { CaptureForm } from "@/components/CaptureForm";
-import { PRICE_PER_HOUR_USD, TRIAL_MINUTES } from "@/lib/config";
+import { FROM_PRICE_USD, TRIAL_MINUTES } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Get a free trial lesson",
@@ -19,7 +19,7 @@ export default async function BookALesson({ searchParams }: PageProps<"/book_a_l
           </h1>
           <p className="mb-6 mt-3 text-lg text-ink-soft">
             {TRIAL_MINUTES} minutes, live, 1-on-1. Leave your email, then pick a time. Lessons
-            after that are ${PRICE_PER_HOUR_USD} an hour.
+            after that come in plans from ${FROM_PRICE_USD} per 4 weeks.
           </p>
           {retry && (
             <p role="alert" className="mb-5 rounded-lg border-2 border-error bg-white p-3 font-semibold text-error">
