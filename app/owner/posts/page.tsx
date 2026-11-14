@@ -31,7 +31,7 @@ export default async function OwnerPosts() {
       <p><Link href="/owner" className="text-sm font-semibold underline">Leads</Link></p>
       <h1 className="mt-2 font-display text-3xl font-extrabold text-ink">Posts</h1>
       <p className="mt-2 max-w-prose text-base text-ink-soft">
-        One post goes out each day at about 6:30 pm US Eastern, to Instagram and Facebook. Only
+        One post goes out each day in the early evening, US Eastern time (about 6:30 pm in winter, 7:30 pm in summer), to Instagram and Facebook. Only
         posts you approve are published. Read each one: a wrong answer costs a maths school more
         than a missed day.
       </p>

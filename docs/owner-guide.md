@@ -64,8 +64,10 @@ list. If the name and email look real, write to them yourself.
    the caption (you can edit it), and a note on how the answer was checked.
 3. Read each one. Press **Approve**, or **Approve all drafts**. Press **Reject** for any
    you do not want.
-4. One approved post goes out each day at about 6:30 pm US Eastern, to Instagram and
-   Facebook. If you approve nothing, nothing is published.
+4. One approved post goes out each day in the early evening, US Eastern time, to Instagram
+   and Facebook. If you approve nothing, nothing is published, and you get an email saying so.
+5. If a post was changed after you approved it, it is not published: it comes back to you
+   as a draft to approve again.
 
 Until Instagram and Facebook are connected (next section), approved posts simply wait. You
 can still tap any slide to download it and post by hand.

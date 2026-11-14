@@ -36,6 +36,8 @@ export interface Post extends PostContent {
   status: PostStatus;
   /** How the answer was verified, written by whoever generated the post. */
   checkNote: string | null;
+  /** Fingerprint of the content the owner approved; null if never approved. */
+  approvedHash: string | null;
   publishError: string | null;
   igMediaId: string | null;
   fbPostId: string | null;
@@ -45,20 +47,24 @@ export interface Post extends PostContent {
 
 /** Everything the slide fonts can draw. Anything else would render as an empty box. */
 const DRAWABLE = /^[\x20-\x7E\n−×÷±√²³π≤≥≠≈°·→½¼¾∞∠△θ’‘“”–—…]*$/u;
+/** The longest run without a space that still fits on one line of a slide. */
+const MAX_WORD = 26;
+const fits = (s: string) => s.split(/\s+/).every((w) => w.length <= MAX_WORD);
 const drawable = (max: number) =>
   z
     .string()
     .trim()
     .min(1)
     .max(max)
-    .refine((s) => DRAWABLE.test(s), "contains a character that cannot be drawn on a slide");
+    .refine((s) => DRAWABLE.test(s), "contains a character that cannot be drawn on a slide")
+    .refine(fits, `has a word longer than ${MAX_WORD} characters, which would run off the slide`);
 
 const blockSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("text"), text: drawable(320) }),
-  z.object({ type: z.literal("math"), text: drawable(60) }),
+  z.object({ type: z.literal("math"), text: drawable(40) }),
   z.object({ type: z.literal("choices"), items: z.array(drawable(40)).length(4) }),
   z.object({ type: z.literal("steps"), items: z.array(drawable(160)).min(1).max(5) }),
-  z.object({ type: z.literal("answer"), text: drawable(60) }),
+  z.object({ type: z.literal("answer"), text: drawable(40) }),
   z.object({ type: z.literal("cta") }),
 ]);
 
@@ -70,7 +76,12 @@ const slideSchema = z.object({
 const contentSchema = z.object({
   kind: z.enum(POST_KINDS),
   topic: z.string().trim().min(1).max(80),
-  caption: z.string().trim().min(1).max(2000),
+  caption: z
+    .string()
+    .trim()
+    .min(1)
+    .max(2000)
+    .refine((s) => DRAWABLE.test(s), "contains a character outside plain text and the listed maths symbols"),
   slides: z.array(slideSchema).min(1).max(6),
 });
 
@@ -92,13 +103,19 @@ const MAX_SLIDE_WEIGHT = 20;
 
 /** Claims a maths school must not make, wherever they appear. */
 const FORBIDDEN: [RegExp, string][] = [
-  [/guarantee/i, "promises a result (\"guarantee\")"],
-  [/official SAT (question|test|problem)/i, "claims to be official SAT material"],
-  [/\bscore\b[^.!?\n]{0,40}\b\d{2,3}\+?\s*points?\b/i, "promises a number of points"],
+  [/guarantee|money[- ]back|\bpromise\b/i, "promises a result"],
+  [/\b(official|real|actual)\s+SAT\s+(question|test|problem|exam)s?/i, "claims to be official SAT material"],
+  [
+    /\b(gain|raise|boost|improve|increase|add|jump|up)\w*\b[^.!?\n]{0,40}\b\d{2,4}\+?\s*points?\b/i,
+    "promises a number of points",
+  ],
+  [/\bscore\b[^.!?\n]{0,20}\b1[0-6]\d\d\b|\b[2-8]\d0\+/i, "promises a score"],
 ];
 
-const LINK = /(https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(com|net|org|io|co|site|me|ly|app|edu)\b\S*/gi;
-const OWN_LINK = /^(https?:\/\/)?pispark\.site(\/\S*)?$/i;
+/** Anything that looks like a web address, wherever it is written. */
+const LINK = /(https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.[a-z]{2,}\b(\/\S*)?/gi;
+const OWN_LINK = /^(https?:\/\/)?(www\.)?pispark\.site(\/\S*)?$/i;
+const MENTION = /@[\w.]+/g;
 
 function allText(c: PostContent): string {
   const parts = [c.caption];
@@ -132,13 +149,20 @@ export function checkPost(raw: unknown): CheckResult {
   content.slides.forEach((s, i) => {
     if (slideWeight(s) > MAX_SLIDE_WEIGHT) problems.push(`Slide ${i + 1} has more text than fits.`);
   });
-  const text = allText(content);
+  // Fold look-alike characters to their plain forms before checking for claims.
+  const text = allText(content).normalize("NFKC");
   for (const [pattern, why] of FORBIDDEN) {
     if (pattern.test(text)) problems.push(`The post ${why}.`);
   }
-  for (const link of content.caption.match(LINK) ?? []) {
+  // Account names contain dots, so take them out before looking for web addresses.
+  for (const link of text.replace(MENTION, " ").match(LINK) ?? []) {
     if (!OWN_LINK.test(link.replace(/[.,;:!?)]+$/, ""))) {
-      problems.push(`The caption links somewhere other than pispark.site (${link}).`);
+      problems.push(`The post links somewhere other than pispark.site (${link}).`);
+    }
+  }
+  for (const mention of text.match(MENTION) ?? []) {
+    if (mention.toLowerCase().replace(/\.$/, "") !== "@pispark.math") {
+      problems.push(`The post mentions another account (${mention}).`);
     }
   }
   if ((content.caption.match(/#[\p{L}\p{N}_]+/gu) ?? []).length > 8) {

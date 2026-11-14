@@ -48,7 +48,7 @@ function BlockView({ block, s, dark }: { block: Block; s: number; dark: boolean 
   switch (block.type) {
     case "text":
       return (
-        <div style={{ display: "flex", fontFamily: BODY, fontSize: 46 * s, lineHeight: 1.35, color: fg, whiteSpace: "pre-wrap" }}>
+        <div style={{ display: "flex", fontFamily: BODY, fontSize: 46 * s, lineHeight: 1.35, color: fg, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
           {block.text}
         </div>
       );
@@ -64,7 +64,8 @@ function BlockView({ block, s, dark }: { block: Block; s: number; dark: boolean 
             background: dark ? "transparent" : "#ffffff",
             fontFamily: MATH,
             fontStyle: "italic",
-            fontSize: (block.text.length > 34 ? 50 : 64) * s,
+            fontSize: (block.text.length > 30 ? 46 : block.text.length > 22 ? 54 : 64) * s,
+            textAlign: "center",
             color: fg,
           }}
         >
@@ -141,7 +142,7 @@ function BlockView({ block, s, dark }: { block: Block; s: number; dark: boolean 
           }}
         >
           <div style={{ display: "flex", fontFamily: BODY, fontWeight: 700, fontSize: 36 * s, color: INK }}>Answer</div>
-          <div style={{ display: "flex", fontFamily: MATH, fontStyle: "italic", fontSize: 56 * s, color: INK }}>{block.text}</div>
+          <div style={{ display: "flex", flex: 1, fontFamily: MATH, fontStyle: "italic", fontSize: (block.text.length > 24 ? 40 : 56) * s, color: INK }}>{block.text}</div>
         </div>
       );
     case "cta":

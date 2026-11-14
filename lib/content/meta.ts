@@ -5,7 +5,11 @@ import "server-only";
  * school's own Facebook Page and to the Instagram account linked to it.
  * One Page access token (META_PAGE_TOKEN) covers both.
  */
+// No version in the address on purpose: Meta then uses the app's own default
+// version, so this does not break when an old pinned version is retired.
 const GRAPH = "https://graph.facebook.com";
+/** No single call may hang the daily job. */
+const TIMEOUT_MS = 10_000;
 
 const token = () => process.env.META_PAGE_TOKEN ?? "";
 export const metaConnected = () => token() !== "";
@@ -18,10 +22,15 @@ async function graph(method: "GET" | "POST", path: string, params: Record<string
   if (method === "GET") {
     const url = new URL(`${GRAPH}${path}`);
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-    res = await fetch(url, { headers });
+    res = await fetch(url, { headers, signal: AbortSignal.timeout(TIMEOUT_MS) });
   } else {
     // The token goes in a header and the fields in the body, never in the address.
-    res = await fetch(`${GRAPH}${path}`, { method, headers, body: new URLSearchParams(params) });
+    res = await fetch(`${GRAPH}${path}`, {
+      method,
+      headers,
+      body: new URLSearchParams(params),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
   }
   const body = (await res.json().catch(() => ({}))) as Json;
   if (!res.ok || body.error) {
@@ -52,13 +61,13 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /** Instagram prepares a carousel before it can be published; wait for that. */
 async function waitUntilReady(containerId: string): Promise<void> {
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 8; i++) {
     const s = await graph("GET", `/${containerId}`, { fields: "status_code" });
-    if (s.status_code === "FINISHED" || s.status_code === undefined) return;
+    if (s.status_code === "FINISHED" || s.status_code === "PUBLISHED") return;
     if (s.status_code === "ERROR" || s.status_code === "EXPIRED") {
       throw new Error(`Instagram could not prepare the post (${s.status_code})`);
     }
-    await sleep(2500);
+    await sleep(2000);
   }
   throw new Error("Instagram took too long to prepare the post");
 }

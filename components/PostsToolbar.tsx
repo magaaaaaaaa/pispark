@@ -16,7 +16,8 @@ export function PostsToolbar({ drafts, connected }: { drafts: number; connected:
         <button
           type="button"
           disabled={pending || drafts === 0}
-          onClick={() =>
+          onClick={() => {
+            if (!window.confirm(`Approve all ${drafts} drafts? Only do this after reading each one.`)) return;
             start(async () => {
               const r = await approveAll();
               setNote({
@@ -24,8 +25,8 @@ export function PostsToolbar({ drafts, connected }: { drafts: number; connected:
                 text: `Approved ${r.approved}.${r.skipped ? ` Skipped ${r.skipped} that break the content rules.` : ""}`,
               });
               router.refresh();
-            })
-          }
+            });
+          }}
           className={`${button} bg-spark text-ink`}
         >
           Approve all {drafts} draft{drafts === 1 ? "" : "s"}

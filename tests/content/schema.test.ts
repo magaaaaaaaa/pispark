@@ -64,6 +64,48 @@ describe("checkPost", () => {
     },
   );
 
+  it.each([
+    "Gain 200 points, we promise",
+    "Score 1500+ or your money back",
+    "Practise with real SAT questions",
+    "Boost your maths by 150 points",
+    "We guаrantee results", // Cyrillic "а"
+  ])("rejects the claim %j", (claim) => {
+    expect(check({ caption: `${claim}. Link in bio.` }).ok).toBe(false);
+  });
+
+  it.each([
+    "A team's score rose from 12 to 20 points in the second half.",
+    "The mean score on the quiz was 82.",
+    "This is in the style of the digital SAT.",
+    "If y = 3.5 and x = 0.25, find xy.",
+  ])("does not block ordinary SAT content: %j", (text) => {
+    expect(check({ slides: [{ blocks: [{ type: "text", text }] }] }).ok).toBe(true);
+  });
+
+  it.each(["evil.xyz", "www.evil.info/page", "bit.ly/abc"])("rejects the outside link %s, in a caption or on a slide", (link) => {
+    expect(check({ caption: `Go to ${link}` }).ok).toBe(false);
+    expect(check({ slides: [{ blocks: [{ type: "text", text: `Go to ${link}` }] }] }).ok).toBe(false);
+  });
+
+  it("accepts our own site written with www", () => {
+    expect(check({ caption: "Free lesson at www.pispark.site" }).ok).toBe(true);
+  });
+
+  it("rejects a mention of another account but allows our own", () => {
+    expect(check({ caption: "Thanks @someoneelse" }).ok).toBe(false);
+    expect(check({ caption: "Follow @pispark.math. Link in bio." }).ok).toBe(true);
+  });
+
+  it("rejects emoji and other characters in a caption that the rules cannot read", () => {
+    expect(check({ caption: "Try it 🔥" }).ok).toBe(false);
+  });
+
+  it("rejects a word too long to fit on one line of a slide", () => {
+    expect(check({ slides: [{ blocks: [{ type: "text", text: "x".repeat(27) }] }] }).ok).toBe(false);
+    expect(check({ slides: [{ blocks: [{ type: "math", text: "2x+3y=12".repeat(4) }] }] }).ok).toBe(false);
+  });
+
   it("rejects a link in the caption other than our own site", () => {
     expect(check({ caption: "See https://evil.example/x" }).ok).toBe(false);
     expect(check({ caption: "Free lesson at pispark.site" }).ok).toBe(true);
