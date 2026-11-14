@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${bricolage.variable} ${publicSans.variable} ${stix.variable} antialiased`}>
       <body className="flex min-h-screen flex-col">
         <header className="border-b-2 border-ink bg-white">
-          <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
             <Link href="/" className="font-display text-2xl font-extrabold tracking-tight text-ink">
               <span className="math not-italic font-normal">π</span>Spark
             </Link>
@@ -46,7 +46,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </header>
         <main className="flex-1">{children}</main>
         <footer className="border-t-2 border-ink bg-white">
-          <div className="mx-auto max-w-5xl space-y-2 px-5 py-6 text-sm text-ink-soft">
+          <div className="mx-auto max-w-6xl space-y-2 px-5 py-6 text-sm text-ink-soft">
             <p>
               PiSpark, Astana, Kazakhstan.{" "}
               <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a>

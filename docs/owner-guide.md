@@ -133,6 +133,6 @@ Facebook password change): repeat steps 3 to 7.
 - The free email plan sends 100 emails a day. A new lead uses 2 at once (reply and your
   alert) and up to 5 more over two weeks; a booking uses 4. That is comfortable up to
   roughly 15 new leads a day. If you get near that, upgrade Resend first. Failed emails are flagged on the lead.
-- The humour ("800 factory", the stereotype line) is on the site and fine for your own posts.
+- The humour (the stereotype line) is on the site and fine for your own posts. "800 factory" is no longer the headline; use it in posts if you like, but never as a promise.
   Keep it out of paid ads: Meta restricts ad copy that refers to ethnicity, and a new ad
   account is the wrong place to test that.

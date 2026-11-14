@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { upcomingSatDates } from "@/lib/sat-dates";
+import { prepTarget, upcomingSatDates } from "@/lib/sat-dates";
 
 describe("upcomingSatDates", () => {
   it("lists the confirmed dates with the day, soonest first", () => {
@@ -21,5 +21,23 @@ describe("upcomingSatDates", () => {
   });
   it("offers nothing dated once the list has run out", () => {
     expect(upcomingSatDates(new Date("2029-01-01T00:00:00Z"))).toEqual([]);
+  });
+});
+
+describe("prepTarget", () => {
+  it("skips a test that is too close and counts whole weeks to the next one", () => {
+    expect(prepTarget(new Date("2026-11-15T12:00:00Z"))).toEqual({
+      label: "March 6, 2027",
+      registerBy: "February 19",
+      weeks: 15,
+      practiceTests: 3,
+    });
+  });
+  it("keeps a test that is exactly eight weeks away", () => {
+    expect(prepTarget(new Date("2027-01-09T00:00:00Z"))?.label).toBe("March 6, 2027");
+    expect(prepTarget(new Date("2027-01-09T00:00:01Z"))?.label).toBe("May 1, 2027");
+  });
+  it("gives nothing once only anticipated dates are left", () => {
+    expect(prepTarget(new Date("2027-05-01T00:00:00Z"))).toBeNull();
   });
 });

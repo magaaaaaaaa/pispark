@@ -14,6 +14,10 @@ export interface Plan {
   name: string;
   /** What the family gets, in a few words. */
   what: string;
+  /** Lessons covered by one payment. */
+  lessons: number;
+  /** When this plan is the right one. */
+  bestWhen: string;
   /** Founding price in USD: per 4 weeks, or once for a one-off plan. */
   founding: number;
   regular: number;
@@ -22,11 +26,20 @@ export interface Plan {
 
 /** Billed every 4 weeks in advance unless `once`. See docs/2026-11-14-pricing-and-program.md. */
 export const PLANS: Plan[] = [
-  { name: "Weekly", what: "1 lesson a week", founding: 139, regular: 179 },
-  { name: "Twice a week", what: "2 lessons a week", founding: 259, regular: 339 },
+  { name: "Weekly", what: "1 lesson a week", lessons: 4, bestWhen: "The test is 3 months away or more", founding: 139, regular: 179 },
+  {
+    name: "Twice a week",
+    what: "2 lessons a week",
+    lessons: 8,
+    bestWhen: "The test is 2 to 3 months away, or the goal is 100+ points up",
+    founding: 259,
+    regular: 339,
+  },
   {
     name: "Test Sprint",
     what: "8 weeks before one SAT date: 16 lessons and 2 full practice tests reviewed",
+    lessons: 16,
+    bestWhen: "You have one test date and want everything aimed at it",
     founding: 499,
     regular: 649,
     once: true,
@@ -53,6 +66,18 @@ export const STAGES = [
   "lost",
 ] as const;
 export type Stage = (typeof STAGES)[number];
+
+export interface Teacher {
+  /** First name, as families will hear it on the call. */
+  name: string;
+  /** Path under /public, portrait, 4:5. */
+  photo: string;
+  alt: string;
+  /** A few short paragraphs in the teacher's own words. Facts only. */
+  note: string[];
+}
+/** Shown on the home page once there is a real photo and a real note; until then the section runs without it. */
+export const TEACHER: Teacher | null = null;
 
 export const CONTACT_EMAIL = "book_a_lesson@pispark.site";
 export const DISCLAIMER =
