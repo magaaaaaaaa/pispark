@@ -132,6 +132,14 @@ export default function Home() {
                 <span className="bg-white/85">{TRIAL_MINUTES} minutes, live, no card.</span>
               </p>
             </div>
+            {TEACHER?.satMath && (
+              <p className="mt-8 max-w-[44ch] text-base leading-relaxed text-ink-soft">
+                <span className="box-decoration-clone bg-white/85">
+                  Taught by {TEACHER.name}: {TEACHER.satMath} on SAT math, studying mathematics at
+                  Nazarbayev University.
+                </span>
+              </p>
+            )}
           </Reveal>
           <MarkedSheet />
         </div>
@@ -222,7 +230,7 @@ export default function Home() {
           <div>
             <h2 className={`${h2} text-ink`}>Who you would be trusting.</h2>
             {TEACHER && (
-              <Reveal as="figure" className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:gap-3">
+              <Reveal as="figure" className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:gap-3 lg:flex-col lg:items-start lg:gap-5 xl:flex-row xl:items-end xl:gap-3">
                 <div className="sheet w-full max-w-[19rem] shrink-0 -rotate-2 p-3">
                   <Image
                     src={TEACHER.photo}
@@ -233,11 +241,17 @@ export default function Home() {
                     className="aspect-[4/5] w-full rounded-[3px] object-cover"
                   />
                 </div>
-                <figcaption className="-rotate-3 text-[1.9rem] sm:mb-14">
+                <figcaption className="-rotate-3 whitespace-nowrap text-[1.9rem] sm:mb-14 sm:text-[1.65rem] lg:mb-0 lg:text-[1.9rem] xl:mb-14 xl:text-[1.75rem]">
                   <PenNote delay={0.5} time={0.5}>I&apos;m {TEACHER.name}.</PenNote>
                   <br />
-                  <PenNote delay={1.0} time={0.8}>I teach every lesson.</PenNote>
-                  <PenArrow delay={1.9} className="ml-2 hidden h-10 w-16 -scale-x-100 rotate-[35deg] sm:block" />
+                  {TEACHER.satMath && (
+                    <>
+                      <PenNote delay={1.0} time={0.7}>{TEACHER.satMath} on SAT math.</PenNote>
+                      <br />
+                    </>
+                  )}
+                  <PenNote delay={TEACHER.satMath ? 1.7 : 1.0} time={0.8}>I teach every lesson.</PenNote>
+                  <PenArrow delay={TEACHER.satMath ? 2.6 : 1.9} className="ml-2 hidden h-10 w-16 -scale-x-100 rotate-[35deg] sm:block lg:hidden xl:block" />
                 </figcaption>
               </Reveal>
             )}
