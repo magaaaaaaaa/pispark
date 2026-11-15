@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Graph paper, ink, and the one bright point on the curve. */
+  /* Graph paper, ink, the one bright point on the curve, and the teacher's red pen. */
   --color-paper: #f2f6fd;
   --color-grid: #cfdbf0;
   --color-ink: #14213d;
@@ -10,14 +10,25 @@
   --color-spark: #ffb800;
   --color-white: #ffffff;
   --color-error: #b3261e;
+  --color-pen: #d92d3a;
+  --color-pen-light: #ff8a8a;
+  --color-pencil: #5b6b8f;
 
   --font-display: var(--font-bricolage);
   --font-sans: var(--font-public);
   --font-math: var(--font-stix);
+  --font-exam: var(--font-stix);
+  --font-hand: var(--font-mynerve);
+  --font-pencil: var(--font-shadows);
+}
+
+:root {
+  interpolate-size: allow-keywords;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
@@ -35,10 +46,34 @@ body {
   background-size: 24px 24px;
 }
 
+/* The same squares on ink, for the dark sections. */
+.graph-ink {
+  background-color: var(--color-ink);
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 .math {
   font-family: var(--font-stix), "Times New Roman", serif;
   font-style: italic;
   white-space: nowrap;
+}
+
+/* The printed voice of a test paper. */
+.exam {
+  font-family: var(--font-stix), "Times New Roman", serif;
+}
+
+/* The teacher's voice: red ballpoint. */
+.hand {
+  font-family: var(--font-mynerve), "Comic Sans MS", cursive;
+  color: var(--color-pen);
+  line-height: 1.15;
+}
+.hand-light {
+  color: var(--color-pen-light);
 }
 
 :focus-visible {
@@ -46,7 +81,65 @@ body {
   outline-offset: 2px;
 }
 
-/* The curve draws itself once, on load. */
+/* A button you can feel: the shadow is the travel. */
+.btn {
+  border: 2px solid var(--color-ink);
+  border-radius: 0.6rem;
+  background: var(--color-spark);
+  color: var(--color-ink);
+  font-weight: 800;
+  box-shadow: 4px 4px 0 var(--color-ink);
+  transition:
+    transform 0.12s ease-out,
+    box-shadow 0.12s ease-out;
+}
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0 var(--color-ink);
+}
+.btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--color-ink);
+}
+.btn:disabled {
+  opacity: 0.6;
+}
+.btn-on-ink {
+  box-shadow: 4px 4px 0 rgb(255 255 255 / 0.9);
+}
+.btn-on-ink:hover {
+  box-shadow: 6px 6px 0 rgb(255 255 255 / 0.9);
+}
+.btn-on-ink:active {
+  box-shadow: 0 0 0 rgb(255 255 255 / 0.9);
+}
+
+/* A sheet of paper lying on the desk. */
+.sheet {
+  background: var(--color-white);
+  border: 2px solid var(--color-ink);
+  border-radius: 6px;
+  box-shadow:
+    0 1px 0 rgb(20 33 61 / 0.04),
+    0 18px 40px -18px rgb(20 33 61 / 0.45);
+}
+
+/* ---------- Pen strokes ---------- */
+
+.pen {
+  fill: none;
+  stroke: var(--color-pen);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pen:not([stroke-width]) {
+  stroke-width: 3;
+}
+.pen-light {
+  stroke: var(--color-pen-light);
+}
+
+/* The curve draws itself once, when the question is answered. */
 .plot-curve {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
@@ -56,6 +149,7 @@ body {
   opacity: 0;
   animation: appear 0.3s ease-out 1.5s forwards;
 }
+
 @keyframes draw {
   to {
     stroke-dashoffset: 0;
@@ -64,6 +158,130 @@ body {
 @keyframes appear {
   to {
     opacity: 1;
+  }
+}
+@keyframes write {
+  to {
+    clip-path: inset(-20% -6% -20% 0);
+  }
+}
+@keyframes uncover {
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+@keyframes sweep {
+  from {
+    left: 0%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+/*
+ * Everything below starts hidden and plays when its section scrolls into view
+ * (a parent gets data-in="true"). Without scripting it is simply shown.
+ * --d is the delay, --t the duration.
+ */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .pen[pathLength] {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  [data-in="true"] .pen[pathLength] {
+    animation: draw var(--t, 0.5s) cubic-bezier(0.55, 0.1, 0.3, 1) var(--d, 0s) forwards;
+  }
+
+  /* Handwriting appears left to right, the way it is written. */
+  .write {
+    clip-path: inset(-20% 100% -20% 0);
+  }
+  [data-in="true"] .write {
+    animation: write var(--t, 0.7s) linear var(--d, 0s) forwards;
+  }
+
+  /* Inside an SVG the same effect is a paper-coloured cover sliding off the line. */
+  .cover {
+    transform-box: fill-box;
+    transform-origin: right center;
+  }
+  [data-in="true"] .cover {
+    animation: uncover var(--t, 0.7s) linear var(--d, 0s) forwards;
+  }
+
+  .pop {
+    opacity: 0;
+  }
+  [data-in="true"] .pop {
+    animation: pop 0.35s cubic-bezier(0.3, 1.4, 0.5, 1) var(--d, 0s) forwards;
+  }
+
+  /* Bars grow from nothing to their share. */
+  .grow {
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d, 0s);
+  }
+  [data-in="true"] .grow {
+    transform: scaleX(1);
+  }
+
+  .playhead {
+    animation: sweep var(--t, 6s) linear forwards;
+  }
+
+  .pulse::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid currentColor;
+    animation: pulse-ring 1.8s ease-out infinite;
+  }
+
+  details::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size 0.28s ease,
+      content-visibility 0.28s allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+  }
+}
+
+@media (scripting: none), (prefers-reduced-motion: reduce) {
+  .cover {
+    display: none;
+  }
+  .playhead {
+    display: none;
   }
 }
 
@@ -78,5 +296,8 @@ body {
   .plot-vertex {
     animation: none;
     opacity: 1;
+  }
+  .btn {
+    transition: none;
   }
 }

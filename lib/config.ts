@@ -31,7 +31,7 @@ export const PLANS: Plan[] = [
     name: "Twice a week",
     what: "2 lessons a week",
     lessons: 8,
-    bestWhen: "The test is 2 to 3 months away, or the goal is 100+ points up",
+    bestWhen: "The test is less than 2 months away, or the goal is 100+ points up",
     founding: 259,
     regular: 339,
   },
@@ -39,7 +39,7 @@ export const PLANS: Plan[] = [
     name: "Test Sprint",
     what: "8 weeks before one SAT date: 16 lessons and 2 full practice tests reviewed",
     lessons: 16,
-    bestWhen: "You have one test date and want everything aimed at it",
+    bestWhen: "The test is 2 to 3 months away and everything should aim at it",
     founding: 499,
     regular: 649,
     once: true,
@@ -76,8 +76,17 @@ export interface Teacher {
   /** A few short paragraphs in the teacher's own words. Facts only. */
   note: string[];
 }
-/** Shown on the home page once there is a real photo and a real note; until then the section runs without it. */
-export const TEACHER: Teacher | null = null;
+/**
+ * Shown on the home page. The photo is the teacher's own: only the background and the
+ * shoulders the selfie cut off were redrawn, the face is untouched. Add `note` paragraphs
+ * only with facts the teacher has confirmed.
+ */
+export const TEACHER: Teacher | null = {
+  name: "Magzhan",
+  photo: "/teacher.jpg",
+  alt: "Magzhan, who teaches every PiSpark lesson, looking straight at the camera",
+  note: [],
+};
 
 export const CONTACT_EMAIL = "book_a_lesson@pispark.site";
 export const DISCLAIMER =

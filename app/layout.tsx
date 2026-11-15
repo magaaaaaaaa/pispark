@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Public_Sans, STIX_Two_Text } from "next/font/google";
+import { Bricolage_Grotesque, Mynerve, Public_Sans, Shadows_Into_Light_Two, STIX_Two_Text } from "next/font/google";
 import Link from "next/link";
 import { ConsentBanner } from "@/components/ConsentBanner";
 import { MetaPixel } from "@/components/MetaPixel";
@@ -9,7 +9,10 @@ import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"] });
 const publicSans = Public_Sans({ variable: "--font-public", subsets: ["latin"] });
-const stix = STIX_Two_Text({ variable: "--font-stix", subsets: ["latin"], style: ["italic"], weight: ["400"] });
+const stix = STIX_Two_Text({ variable: "--font-stix", subsets: ["latin"], style: ["normal", "italic"], weight: ["400"] });
+/** The teacher's red pen, and the student's pencil. */
+const mynerve = Mynerve({ variable: "--font-mynerve", subsets: ["latin"], weight: ["400"] });
+const shadows = Shadows_Into_Light_Two({ variable: "--font-shadows", subsets: ["latin"], weight: ["400"] });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pispark.site";
 
@@ -29,18 +32,25 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${bricolage.variable} ${publicSans.variable} ${stix.variable} antialiased`}>
+    <html lang="en" className={`${bricolage.variable} ${publicSans.variable} ${stix.variable} ${mynerve.variable} ${shadows.variable} antialiased`}>
       <body className="flex min-h-screen flex-col">
-        <header className="border-b-2 border-ink bg-white">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
+        {/* Roughens pen strokes so they look drawn, not plotted. */}
+        <svg aria-hidden="true" width="0" height="0" className="absolute">
+          <filter id="rough" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" />
+          </filter>
+        </svg>
+        <header className="sticky top-0 z-30 border-b-2 border-ink bg-white">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-2.5">
             <Link href="/" className="font-display text-2xl font-extrabold tracking-tight text-ink">
               <span className="math not-italic font-normal">π</span>Spark
             </Link>
             <Link
               href="/book_a_lesson"
-              className="rounded-md border-2 border-ink bg-spark px-4 py-2 text-sm font-bold text-ink"
+              className="btn inline-block px-4 py-2 text-sm"
             >
-              Book a free trial
+              Free trial lesson
             </Link>
           </div>
         </header>

@@ -148,7 +148,7 @@ export function CaptureForm() {
       <button
         type="submit"
         disabled={sending}
-        className="w-full rounded-lg border-2 border-ink bg-spark px-6 py-4 text-xl font-extrabold text-ink disabled:opacity-60"
+        className="btn w-full px-6 py-4 text-xl"
       >
         {sending ? "Saving your spot…" : "Get my free trial lesson"}
       </button>

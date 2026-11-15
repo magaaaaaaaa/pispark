@@ -35,8 +35,10 @@ All lessons are 60 minutes, live, 1-on-1, online. Prices are per 4 weeks, paid i
   This is the honest version of "we are new": a real discount from a real price.
 - Still roughly half a typical tutor's rate, so "good value" survives; it just no longer looks
   suspicious.
-- **Which plan to recommend:** more than 12 weeks to the test → Weekly; 8–12 weeks, or a gap of
-  more than 100 points to the goal → Twice a week; a family set on one specific date → Test Sprint.
+- **Which plan to recommend:** 12 weeks or more to the test → Weekly; 8–12 weeks → Test Sprint;
+  less than 8 weeks, or a gap of more than 100 points to the goal → Twice a week. Students close
+  to a test date are welcome: the site shows what the remaining weeks can and cannot do
+  (`lib/prep.ts`).
 
 ### Next SAT dates (College Board, checked 14 Nov 2026)
 

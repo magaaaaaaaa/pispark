@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { prepTarget, upcomingSatDates } from "@/lib/sat-dates";
+import { satOptions, upcomingSatDates } from "@/lib/sat-dates";
 
 describe("upcomingSatDates", () => {
   it("lists the confirmed dates with the day, soonest first", () => {
@@ -24,20 +24,21 @@ describe("upcomingSatDates", () => {
   });
 });
 
-describe("prepTarget", () => {
-  it("skips a test that is too close and counts whole weeks to the next one", () => {
-    expect(prepTarget(new Date("2026-11-15T12:00:00Z"))).toEqual({
-      label: "March 6, 2027",
-      registerBy: "February 19",
-      weeks: 15,
-      practiceTests: 3,
-    });
+describe("satOptions", () => {
+  it("offers the nearest confirmed date first, however close it is", () => {
+    const o = satOptions(new Date("2026-11-15T12:00:00Z"));
+    expect(o.map((d) => d.short)).toEqual(["Dec 5", "Mar 6", "May 1", "Jun 5"]);
+    expect(o[0]).toMatchObject({ day: "December 5", days: 20, registerBy: "November 20", registrationOpen: true });
   });
-  it("keeps a test that is exactly eight weeks away", () => {
-    expect(prepTarget(new Date("2027-01-09T00:00:00Z"))?.label).toBe("March 6, 2027");
-    expect(prepTarget(new Date("2027-01-09T00:00:01Z"))?.label).toBe("May 1, 2027");
+  it("says when regular registration has closed", () => {
+    const o = satOptions(new Date("2026-11-21T00:00:00Z"));
+    expect(o[0]).toMatchObject({ short: "Dec 5", days: 14, registrationOpen: false });
   });
-  it("gives nothing once only anticipated dates are left", () => {
-    expect(prepTarget(new Date("2027-05-01T00:00:00Z"))).toBeNull();
+  it("keeps the test happening today and drops it the day after", () => {
+    expect(satOptions(new Date("2026-12-05T20:00:00Z"))[0]).toMatchObject({ short: "Dec 5", days: 0 });
+    expect(satOptions(new Date("2026-12-06T00:00:00Z"))[0].short).toBe("Mar 6");
+  });
+  it("leaves out dates College Board has only anticipated", () => {
+    expect(satOptions(new Date("2027-06-06T00:00:00Z"))).toEqual([]);
   });
 });

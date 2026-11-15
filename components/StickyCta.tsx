@@ -26,7 +26,7 @@ export function StickyCta() {
     <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ink bg-white p-3 sm:hidden">
       <a
         href="#start"
-        className="block rounded-lg border-2 border-ink bg-spark px-4 py-3 text-center text-lg font-extrabold text-ink"
+        className="btn block px-4 py-3 text-center text-lg"
       >
         Get my free trial lesson
       </a>
