@@ -82,10 +82,13 @@ export interface Teacher {
  * only with facts the teacher has confirmed.
  */
 export const TEACHER: Teacher | null = {
-  name: "Magzhan",
+  name: "Maga",
   photo: "/teacher.jpg",
-  alt: "Magzhan, who teaches every PiSpark lesson, looking straight at the camera",
-  note: [],
+  alt: "Maga, who teaches every PiSpark lesson, looking straight at the camera",
+  note: [
+    "I study mathematics at Nazarbayev University, Kazakhstan's English-language research university.",
+    "I have been teaching math since I was in middle school myself, and the students I worked with went on to good grades at school. Now I teach one thing: the SAT math section, which I know inside out.",
+  ],
 };
 
 export const CONTACT_EMAIL = "book_a_lesson@pispark.site";
