@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Mynerve, Public_Sans, Shadows_Into_Light_Two, STIX_Two_Text } from "next/font/google";
 import Link from "next/link";
 import { ConsentBanner } from "@/components/ConsentBanner";
@@ -15,6 +15,14 @@ const mynerve = Mynerve({ variable: "--font-mynerve", subsets: ["latin"], weight
 const shadows = Shadows_Into_Light_Two({ variable: "--font-shadows", subsets: ["latin"], weight: ["400"] });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pispark.site";
+
+/** Edge to edge on notched phones; the bottom bar keeps clear of the home indicator. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#ffffff",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -41,14 +49,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" />
           </filter>
         </svg>
-        <header className="sticky top-0 z-30 border-b-2 border-ink bg-white">
+        <header className="z-30 border-b-2 border-ink bg-white sm:sticky sm:top-0">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-2.5">
-            <Link href="/" className="font-display text-2xl font-extrabold tracking-tight text-ink">
+            <Link href="/" className="-my-2 inline-block py-2 font-display text-2xl font-extrabold tracking-tight text-ink">
               <span className="math not-italic font-normal">π</span>Spark
             </Link>
             <Link
               href="/book_a_lesson"
-              className="btn inline-block px-4 py-2 text-sm"
+              className="btn hidden px-4 py-2.5 text-sm sm:inline-block"
             >
               Free trial lesson
             </Link>
@@ -62,8 +70,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a>
             </p>
             <p>
-              <Link href="/privacy" className="underline">Privacy policy</Link>{" "}
-              <Link href="/terms" className="ml-3 underline">Terms</Link>
+              <Link href="/privacy" className="inline-block py-2 underline">Privacy policy</Link>{" "}
+              <Link href="/terms" className="ml-5 inline-block py-2 underline">Terms</Link>
             </p>
             <p>{DISCLAIMER}</p>
           </div>

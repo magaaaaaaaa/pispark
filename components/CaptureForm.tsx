@@ -100,12 +100,12 @@ export function CaptureForm() {
     <form onSubmit={onSubmit} action="/api/lead" method="post" noValidate className="space-y-4">
       <div>
         <label htmlFor={`${uid}-firstName`} className={labelClass}>First name</label>
-        <input {...field("firstName")} required maxLength={80} autoComplete="given-name" className={inputClass} />
+        <input {...field("firstName")} required maxLength={80} autoComplete="given-name" autoCapitalize="words" enterKeyHint="next" spellCheck={false} className={inputClass} />
         {err("firstName")}
       </div>
       <div>
         <label htmlFor={`${uid}-email`} className={labelClass}>Email</label>
-        <input {...field("email")} type="email" required autoComplete="email" inputMode="email" className={inputClass} />
+        <input {...field("email")} type="email" required autoComplete="email" inputMode="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint={role === "student" ? "next" : "go"} className={inputClass} />
         {err("email")}
       </div>
 
@@ -115,7 +115,7 @@ export function CaptureForm() {
           {(["parent", "student"] as const).map((r) => (
             <label
               key={r}
-              className={`cursor-pointer rounded-lg border-2 border-ink px-3 py-2 text-center text-base font-semibold has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-plot ${role === r ? "bg-ink text-white" : "bg-white text-ink"}`}
+              className={`cursor-pointer rounded-lg border-2 border-ink flex min-h-12 items-center justify-center whitespace-nowrap px-1.5 py-2 text-center text-[0.9rem] font-semibold min-[360px]:text-[0.95rem] sm:text-base has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-plot ${role === r ? "bg-ink text-white" : "bg-white text-ink"}`}
             >
               <input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)} className="sr-only" />
               {r === "parent" ? "I’m a parent" : "I’m the student"}
@@ -127,7 +127,7 @@ export function CaptureForm() {
       {role === "student" && (
         <div>
           <label htmlFor={`${uid}-parentEmail`} className={labelClass}>A parent’s email</label>
-          <input {...field("parentEmail")} type="email" required inputMode="email" className={inputClass} />
+          <input {...field("parentEmail")} type="email" required inputMode="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint="go" className={inputClass} />
           <p className="mt-1 text-sm text-ink-soft">We copy a parent in. That is all we use it for.</p>
           {err("parentEmail")}
         </div>
@@ -148,7 +148,7 @@ export function CaptureForm() {
       <button
         type="submit"
         disabled={sending}
-        className="btn w-full px-6 py-4 text-xl"
+        className="btn w-full whitespace-nowrap px-4 py-4 text-lg sm:px-6 sm:text-xl"
       >
         {sending ? "Saving your spot…" : "Get my free trial lesson"}
       </button>
@@ -157,7 +157,7 @@ export function CaptureForm() {
         Free {TRIAL_MINUTES}-minute 1-on-1 lesson. No card. You pick a time on the next screen, or
         later from your inbox. Rather chat?{" "}
         <a href={INSTAGRAM_DM_URL} className="font-semibold text-ink underline">Message us on Instagram</a>.{" "}
-        <Link href="/privacy" className="underline">Privacy</Link>
+        <Link href="/privacy" className="inline-block underline">Privacy</Link>
       </p>
     </form>
   );

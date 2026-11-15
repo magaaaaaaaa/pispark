@@ -28,7 +28,20 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
+  scroll-padding-top: 1rem;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+@media (min-width: 40rem) {
+  html {
+    scroll-padding-top: 5rem;
+  }
+}
+a,
+button,
+summary,
+label {
+  touch-action: manipulation;
 }
 
 body {
@@ -112,6 +125,25 @@ body {
 }
 .btn-on-ink:active {
   box-shadow: 0 0 0 rgb(255 255 255 / 0.9);
+}
+
+/* A CSS strike for phones, where a title can wrap: one line per row of text. */
+.strike {
+  background-image: linear-gradient(var(--color-pen), var(--color-pen));
+  background-repeat: no-repeat;
+  background-position: 0 58%;
+  background-size: 100% 2.5px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .strike {
+    background-size: 0% 2.5px;
+    transition: background-size 0.45s cubic-bezier(0.55, 0.1, 0.3, 1) var(--d, 0s);
+  }
+  [data-in="true"] .strike {
+    background-size: 100% 2.5px;
+  }
 }
 
 /* A sheet of paper lying on the desk. */

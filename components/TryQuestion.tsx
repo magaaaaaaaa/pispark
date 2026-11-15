@@ -58,12 +58,13 @@ export function TryQuestion() {
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) {
+        // On a phone the card is taller than the screen, so "most of the screen" counts too.
+        if (e.intersectionRatio >= 0.6 || e.intersectionRect.height >= window.innerHeight * 0.55) {
           setLeft((l) => l ?? SECONDS);
           io.disconnect();
         }
       },
-      { threshold: 0.6 },
+      { threshold: [0, 0.2, 0.4, 0.6] },
     );
     io.observe(el);
     return () => io.disconnect();
@@ -75,9 +76,21 @@ export function TryQuestion() {
     return () => clearInterval(id);
   }, [running]);
 
+  const feedback = useRef<HTMLDivElement>(null);
+
   function pick(i: number) {
     if (took === null && left !== null) setTook(SECONDS - left);
     setPicked(i);
+    // On a phone the verdict lands below the screen: bring its first lines into view.
+    requestAnimationFrame(() => {
+      const el = feedback.current;
+      if (!el) return;
+      const top = el.getBoundingClientRect().top;
+      if (top > window.innerHeight * 0.6) {
+        const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollBy({ top: top - window.innerHeight * 0.35, behavior: smooth ? "smooth" : "auto" });
+      }
+    });
   }
 
   const timeUp = left === 0 && !answered;
@@ -112,7 +125,7 @@ export function TryQuestion() {
             type="button"
             aria-pressed={picked === i}
             onClick={() => pick(i)}
-            className="relative flex items-baseline justify-center gap-2 rounded-lg border-2 border-ink bg-white px-3 py-3.5 text-ink transition-colors hover:bg-paper"
+            className="relative flex min-h-14 items-baseline justify-center gap-2 rounded-lg border-2 border-ink bg-white px-3 py-3.5 text-ink transition-[background-color,transform] active:scale-[0.97] hover:bg-paper"
           >
             <span className="text-sm font-bold text-ink-soft">{c.letter}</span>
             <span className="exam text-3xl">{c.value}</span>
@@ -126,7 +139,7 @@ export function TryQuestion() {
         ))}
       </div>
 
-      <div aria-live="polite">
+      <div ref={feedback} aria-live="polite">
         {timeUp && (
           <p className="mt-5 text-base leading-relaxed text-ink-soft">
             That was 95 seconds. On test day you would guess and move on. Here, take as long as you like.

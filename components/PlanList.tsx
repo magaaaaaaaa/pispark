@@ -25,12 +25,12 @@ export function PlanList() {
             <span className="font-semibold">Right when:</span> {p.bestWhen.charAt(0).toLowerCase() + p.bestWhen.slice(1)}.
           </p>
           <div className="md:text-right">
-            <p className="font-display text-5xl font-extrabold tracking-tight text-ink">
+            <p className="flex flex-wrap items-baseline font-display text-5xl font-extrabold tracking-tight text-ink md:justify-end">
               <span className="relative inline-block">
                 ${p.founding}
                 {fits === p.name && <PenCircle key={p.name} delay={0.3} className="-inset-x-5 -inset-y-3" />}
               </span>
-              <span className="ml-3 font-sans text-lg font-bold tracking-normal text-ink-soft">
+              <span className="ml-3 whitespace-nowrap font-sans text-lg font-bold tracking-normal text-ink-soft">
                 {p.once ? "once" : "per 4 weeks"}
               </span>
             </p>

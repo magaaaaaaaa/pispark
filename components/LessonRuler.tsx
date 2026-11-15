@@ -56,33 +56,30 @@ export function LessonRuler() {
 
   return (
     <div ref={root} className="mt-10">
-      <div className="relative">
+      <div className="relative" aria-hidden="true">
         <div className="flex h-12 overflow-hidden rounded-md border-2 border-ink sm:h-16">
           {PARTS.map((p, i) => (
-            <button
+            <div
               key={p.from}
-              type="button"
-              aria-label={`Minutes ${p.from} to ${p.to}: ${p.title}`}
-              aria-pressed={active === i}
               onClick={() => choose(i)}
               onMouseEnter={() => choose(i)}
-              className={`${p.fill} border-r-2 border-ink transition-opacity last:border-r-0 ${active !== null && active !== i ? "opacity-35" : ""}`}
+              className={`${p.fill} cursor-pointer border-r-2 border-ink transition-opacity last:border-r-0 ${active !== null && active !== i ? "opacity-35" : ""}`}
               style={{ width: `${((p.to - p.from) / LESSON_MINUTES) * 100}%` }}
             />
           ))}
         </div>
         {playing && (
           <div
-            aria-hidden="true"
             className="playhead pointer-events-none absolute -bottom-2 -top-2 w-1 -translate-x-1/2 rounded-full bg-pen"
             style={{ ["--t" as string]: `${PLAY_SECONDS}s` }}
           />
         )}
-        <div aria-hidden="true" className="math relative mt-1.5 h-6 text-base not-italic text-ink-soft">
+        <div className="math relative mt-1.5 h-6 text-base not-italic text-ink-soft">
           {[0, ...PARTS.map((p) => p.to)].map((m) => (
             <span
               key={m}
-              className="absolute -translate-x-1/2 first:translate-x-0 last:-translate-x-full"
+              // 55 sits too close to 60 on a phone.
+              className={`absolute -translate-x-1/2 first:translate-x-0 last:-translate-x-full ${m === 55 ? "hidden sm:inline" : ""}`}
               style={{ left: `${(m / LESSON_MINUTES) * 100}%` }}
             >
               {m}
@@ -90,15 +87,22 @@ export function LessonRuler() {
           ))}
         </div>
       </div>
-      <ol className="mt-6 grid gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
+      <ol className="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2 sm:gap-y-7 lg:grid-cols-4">
         {PARTS.map((p, i) => (
-          <li key={p.from} className={`transition-opacity duration-300 ${active !== null && active !== i ? "opacity-40" : ""}`}>
-            <p className="flex items-center gap-2 text-base font-semibold text-ink-soft">
-              <span aria-hidden="true" className={`${p.fill} inline-block h-4 w-4 rounded-sm border-2 border-ink`} />
-              Minutes {p.from} to {p.to}
-            </p>
-            <h3 className="mt-2 text-xl font-bold leading-snug text-ink">{p.title}</h3>
-            <p className="mt-2 text-base leading-relaxed text-ink-soft">{p.body}</p>
+          <li key={p.from}>
+            <button
+              type="button"
+              aria-pressed={active === i}
+              onClick={() => choose(i)}
+              className={`-mx-3 w-[calc(100%+1.5rem)] rounded-lg px-3 py-3 text-left transition-opacity duration-300 hover:bg-paper ${active !== null && active !== i ? "opacity-40" : ""}`}
+            >
+              <span className="flex items-center gap-2 text-base font-semibold text-ink-soft">
+                <span aria-hidden="true" className={`${p.fill} inline-block h-4 w-4 rounded-sm border-2 border-ink`} />
+                Minutes {p.from} to {p.to}
+              </span>
+              <span className="mt-2 block text-xl font-bold leading-snug text-ink">{p.title}</span>
+              <span className="mt-2 block text-base leading-relaxed text-ink-soft">{p.body}</span>
+            </button>
           </li>
         ))}
       </ol>

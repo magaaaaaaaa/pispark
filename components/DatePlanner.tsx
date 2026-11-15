@@ -29,7 +29,7 @@ function useCount(target: number) {
 }
 
 const chip = (on: boolean) =>
-  `rounded-lg border-2 px-4 py-2.5 text-lg font-bold transition-colors ${
+  `min-h-12 rounded-lg border-2 px-4 py-2.5 text-lg font-bold transition-colors ${
     on ? "border-spark bg-spark text-ink" : "border-white/45 text-white hover:border-white"
   }`;
 
@@ -117,7 +117,7 @@ export function DatePlanner({ options }: { options: SatOption[] }) {
                 <PenNote light delay={0.7} time={0.6}>
                   that&apos;s the
                 </PenNote>
-                <a href="#price" className="hand hand-light write underline decoration-2 underline-offset-4" style={{ "--d": "1.3s", "--t": "0.5s" } as CSSProperties}>
+                <a href="#price" className="hand hand-light write inline-block py-1.5 underline decoration-2 underline-offset-4" style={{ "--d": "1.3s", "--t": "0.5s" } as CSSProperties}>
                   {plan.plan} plan
                 </a>
                 <PenArrow light delay={1.8} className="inline-block h-9 w-14 rotate-[20deg]" />

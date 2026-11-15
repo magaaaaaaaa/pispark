@@ -106,11 +106,11 @@ export default function Home() {
     <>
       {/* 1. A mistake gets found while you watch. */}
       <section className="graph-paper overflow-hidden border-b-2 border-ink">
-        <div className={`${wrap} grid gap-12 py-12 sm:py-16 lg:grid-cols-[1fr_minmax(0,30rem)] lg:items-center lg:gap-10 lg:py-20`}>
+        <div className={`${wrap} grid gap-12 py-8 sm:py-16 lg:grid-cols-[1fr_minmax(0,30rem)] lg:items-center lg:gap-10 lg:py-20`}>
           <Reveal>
-            <h1 className="font-display text-[2.9rem] font-extrabold leading-[0.96] tracking-tight text-ink sm:text-7xl lg:text-[5.2rem]">
+            <h1 className="font-display text-[2.2rem] font-extrabold leading-[0.98] tracking-tight text-ink min-[375px]:text-[2.55rem] min-[410px]:text-[2.9rem] sm:text-7xl lg:text-[5.2rem]">
               <span className="block">Every wrong answer has a reason.</span>
-              <span className="mt-3 block sm:mt-5">
+              <span className="mt-2 block sm:mt-5">
                 We teach{" "}
                 <span className="relative inline-block whitespace-nowrap">
                   the reason.
@@ -118,13 +118,13 @@ export default function Home() {
                 </span>
               </span>
             </h1>
-            <p className="mt-8 max-w-[44ch] text-xl leading-relaxed text-ink sm:mt-10 sm:text-2xl sm:leading-relaxed">
+            <p className="mt-6 max-w-[44ch] text-lg leading-relaxed text-ink sm:mt-10 sm:text-2xl sm:leading-relaxed">
               <span className="box-decoration-clone bg-white/85">
                 Live 1-on-1 SAT math lessons online. One teacher, a fixed time every week, and a
                 plan built from your student&apos;s own mistakes.
               </span>
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 sm:mt-8">
               <a href="#start" data-signup className="btn inline-block px-7 py-4 text-xl">
                 Get a free trial lesson
               </a>
@@ -272,7 +272,7 @@ export default function Home() {
               : worked questions, common mistakes, calculator shortcuts. Read a few before you talk
               to us.
             </p>
-            <address className="mt-6 text-base not-italic leading-relaxed text-ink-soft">
+            <address className="mt-6 text-base not-italic leading-loose text-ink-soft">
               {POSTAL_ADDRESS}
               <br />
               <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">{CONTACT_EMAIL}</a>
@@ -288,7 +288,11 @@ export default function Home() {
               {wont.map((w, i) => (
                 <li key={w.title} className="py-5">
                   <p className="text-2xl font-bold text-ink">
-                    <span className="relative inline-block">
+                    {/* A title can wrap on a phone, so there the strike is drawn per line. */}
+                    <span className="strike sm:hidden" style={{ ["--d" as string]: `${0.2 + i * 0.3}s` }}>
+                      {w.title}
+                    </span>
+                    <span className="relative hidden sm:inline-block">
                       {w.title}
                       <PenStrike delay={0.2 + i * 0.45} />
                     </span>
@@ -329,14 +333,14 @@ export default function Home() {
           <h2 className={`${h2} text-ink`}>Fair questions.</h2>
           <div className="divide-y-2 divide-grid border-y-2 border-grid">
             {faqs.map((f) => (
-              <details key={f.q} className="group py-5">
-                <summary className="flex cursor-pointer list-none items-baseline gap-3 text-xl font-bold text-ink marker:hidden [&::-webkit-details-marker]:hidden">
+              <details key={f.q} className="group">
+                <summary className="flex min-h-14 cursor-pointer list-none items-baseline gap-3 py-4 text-xl font-bold text-ink marker:hidden [&::-webkit-details-marker]:hidden">
                   <span aria-hidden="true" className="exam w-4 shrink-0 text-2xl leading-none text-plot transition-transform duration-200 group-open:rotate-45">
                     +
                   </span>
                   {f.q}
                 </summary>
-                <p className="mt-2 max-w-[60ch] pl-7 text-lg leading-relaxed text-ink-soft">{f.a}</p>
+                <p className="max-w-[60ch] pb-5 pl-7 text-lg leading-relaxed text-ink-soft">{f.a}</p>
               </details>
             ))}
           </div>
