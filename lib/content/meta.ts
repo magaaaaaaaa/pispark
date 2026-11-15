@@ -114,3 +114,24 @@ export async function publishToFacebook(
   const post = await graph("POST", `/${pageId}/feed`, params);
   return String(post.id);
 }
+
+/** Public counts for one Instagram post. */
+export async function instagramCounts(mediaId: string): Promise<{ likes: number; comments: number }> {
+  const m = await graph("GET", `/${mediaId}`, { fields: "like_count,comments_count" });
+  return { likes: Number(m.like_count ?? 0), comments: Number(m.comments_count ?? 0) };
+}
+
+/** Public counts for one Facebook Page post. */
+export async function facebookCounts(
+  postId: string,
+): Promise<{ reactions: number; comments: number; shares: number }> {
+  const p = await graph("GET", `/${postId}`, {
+    fields: "reactions.summary(total_count).limit(0),comments.summary(total_count).limit(0),shares",
+  });
+  const total = (v: unknown) => Number((v as { summary?: { total_count?: number } } | undefined)?.summary?.total_count ?? 0);
+  return {
+    reactions: total(p.reactions),
+    comments: total(p.comments),
+    shares: Number((p.shares as { count?: number } | undefined)?.count ?? 0),
+  };
+}

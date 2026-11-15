@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { refreshMetrics } from "@/lib/content/metrics";
 import { runContent } from "@/lib/content/publish";
 import { sendEmail } from "@/lib/email/send";
 
@@ -17,9 +18,16 @@ function authorised(request: Request): boolean {
 export async function GET(request: Request) {
   if (!authorised(request)) return new Response("Unauthorized", { status: 401 });
   try {
-    const run = await runContent(new Date());
+    const now = new Date();
+    const run = await runContent(now);
     console.log("Content run", run);
-    return Response.json({ ok: true, ...run });
+    // How earlier posts did. Never allowed to fail the run: publishing has already happened.
+    const metrics = await refreshMetrics(now).catch((e) => {
+      console.error("Metrics refresh failed", e);
+      return { measured: 0, failed: -1 };
+    });
+    console.log("Metrics", metrics);
+    return Response.json({ ok: true, ...run, metrics });
   } catch (e) {
     console.error("Content run failed", e);
     // A silent failure here would mean silent days. Say so, if email still works.

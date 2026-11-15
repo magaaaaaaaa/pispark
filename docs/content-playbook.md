@@ -33,6 +33,45 @@ three weeks. Before writing, list the last 15 posts' `topic` values and avoid th
 - **Geometry and trigonometry:** area and volume, lines and angles, triangles, circles,
   right-triangle trigonometry.
 
+## Learn from how the last weeks went
+
+Before writing, look at how earlier posts did. The site refreshes likes, comments and shares
+for every post daily for three weeks after it goes out.
+
+```sql
+select scheduled_for, kind, topic,
+       coalesce(ig_likes, 0) + 2 * coalesce(ig_comments, 0)
+         + coalesce(fb_reactions, 0) + 2 * coalesce(fb_comments, 0) + 3 * coalesce(fb_shares, 0) as score,
+       ig_likes, ig_comments, fb_reactions, fb_comments, fb_shares
+from public.posts
+where status = 'published' and published_at > now() - interval '42 days'
+order by scheduled_for;
+```
+
+And which channels brought sign-ups, per week:
+
+```sql
+select date_trunc('week', created_at)::date as week, utm_source, utm_medium, count(*)
+from public.leads
+where created_at > now() - interval '42 days'
+group by 1, 2, 3 order by 1;
+```
+
+How to use it:
+
+- **Comments and shares count more than likes**: they mean someone engaged or passed it on.
+- **Change one thing a week, and keep the five-day shape.** Weekdays keep their kind. What can
+  move: which topic area gets more posts, the difficulty of Monday's and Friday's questions,
+  the style of the first slide (question first, or a mistake first), and the caption's
+  opening line and call to action.
+- **Do not read anything into fewer than two weeks of posts** or a difference of a few likes.
+  Until there are 10 published posts, keep the default mix and say so.
+- **A sign-up beats any number of likes.** If a week brought sign-ups from Instagram or
+  Facebook, keep what that week did and say what it was.
+- In `check_note` of the Monday post, add one line starting `Learning:` that says what you
+  kept, what you changed this week and why, citing the numbers. The owner sees it on the
+  approval page.
+
 ## Rules that are not negotiable
 
 1. **Every answer is verified by computing it.** Solve each question with code (for example

@@ -234,3 +234,33 @@ export async function markNotified(ids: string[]): Promise<void> {
     .in("id", valid);
   fail(error);
 }
+
+/** Published posts still worth measuring: out within the last `days` days. */
+export async function listRecentlyPublished(since: Date): Promise<Post[]> {
+  const { data, error } = await client()
+    .from("posts")
+    .select("*")
+    .eq("status", "published")
+    .gte("published_at", since.toISOString());
+  fail(error);
+  return rows(data).map(toPost);
+}
+
+export interface PostMetrics {
+  igLikes?: number;
+  igComments?: number;
+  fbReactions?: number;
+  fbComments?: number;
+  fbShares?: number;
+}
+
+export async function saveMetrics(id: string, m: PostMetrics): Promise<void> {
+  const row: Record<string, unknown> = { metrics_at: new Date().toISOString() };
+  if (m.igLikes !== undefined) row.ig_likes = m.igLikes;
+  if (m.igComments !== undefined) row.ig_comments = m.igComments;
+  if (m.fbReactions !== undefined) row.fb_reactions = m.fbReactions;
+  if (m.fbComments !== undefined) row.fb_comments = m.fbComments;
+  if (m.fbShares !== undefined) row.fb_shares = m.fbShares;
+  const { error } = await client().from("posts").update(row).eq("id", id);
+  fail(error);
+}
