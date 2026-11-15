@@ -25,10 +25,10 @@ import { satOptions } from "@/lib/sat-dates";
 /** The days-to-test-day figures are worked out from today's date, so refresh hourly. */
 export const revalidate = 3600;
 
-const h2 = "font-display text-4xl font-extrabold leading-[1.02] tracking-tight sm:text-5xl lg:text-[3.4rem]";
+const h2 = "font-display text-[2rem] font-extrabold leading-[1.02] tracking-tight sm:text-5xl lg:text-[3.4rem]";
 const wrap = "mx-auto max-w-6xl px-5";
-const pad = "py-16 sm:py-24";
-const lead = "mt-5 max-w-[60ch] text-lg leading-relaxed sm:text-xl sm:leading-relaxed";
+const pad = "py-12 sm:py-24";
+const lead = "mt-3 max-w-[60ch] text-base leading-relaxed sm:mt-5 sm:text-xl sm:leading-relaxed";
 
 const steps = [
   {
@@ -106,7 +106,7 @@ export default function Home() {
     <>
       {/* 1. A mistake gets found while you watch. */}
       <section className="graph-paper overflow-hidden border-b-2 border-ink">
-        <div className={`${wrap} grid gap-12 py-8 sm:py-16 lg:grid-cols-[1fr_minmax(0,30rem)] lg:items-center lg:gap-10 lg:py-20`}>
+        <div className={`${wrap} grid gap-8 py-8 sm:gap-12 sm:py-16 lg:grid-cols-[1fr_minmax(0,30rem)] lg:items-center lg:gap-10 lg:py-20`}>
           <Reveal>
             <h1 className="font-display text-[2.2rem] font-extrabold leading-[0.98] tracking-tight text-ink min-[375px]:text-[2.55rem] min-[410px]:text-[2.9rem] sm:text-7xl lg:text-[5.2rem]">
               <span className="block">Every wrong answer has a reason.</span>
@@ -133,7 +133,7 @@ export default function Home() {
               </p>
             </div>
             {TEACHER?.satMath && (
-              <p className="mt-8 max-w-[44ch] text-base leading-relaxed text-ink-soft">
+              <p className="mt-5 max-w-[44ch] text-base leading-relaxed text-ink-soft sm:mt-8">
                 <span className="box-decoration-clone bg-white/85">
                   Taught by {TEACHER.name}: {TEACHER.satMath} on SAT math, studying mathematics at
                   Nazarbayev University.
@@ -147,7 +147,7 @@ export default function Home() {
 
       {/* 2. Now the visitor's own answer gets the same treatment. */}
       <section className="graph-ink border-b-2 border-ink">
-        <div className={`${wrap} ${pad} grid gap-10 lg:grid-cols-[minmax(0,22rem)_1fr] lg:items-start lg:gap-16`}>
+        <div className={`${wrap} ${pad} grid gap-6 sm:gap-10 lg:grid-cols-[minmax(0,22rem)_1fr] lg:items-start lg:gap-16`}>
           <div className="lg:sticky lg:top-28">
             <h2 className={`${h2} text-white`}>Your turn.</h2>
             <p className={`${lead} text-white/85`}>
@@ -161,18 +161,18 @@ export default function Home() {
 
       {/* 3. The offer and the form. */}
       <section className="border-b-2 border-ink bg-white">
-        <div className={`${wrap} ${pad} grid gap-12 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-16`}>
+        <div className={`${wrap} ${pad} grid gap-8 sm:gap-12 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-16`}>
           <div>
             <h2 className={`${h2} text-ink`}>The first lesson is free. Here is what happens.</h2>
-            <ol className="mt-10 space-y-8">
+            <ol className="mt-6 space-y-5 sm:mt-10 sm:space-y-8">
               {steps.map((s, i) => (
-                <li key={s.title} className="grid grid-cols-[3rem_1fr] gap-x-4">
-                  <span className="exam flex h-12 w-12 items-center justify-center rounded-full border-2 border-ink bg-spark text-2xl">
+                <li key={s.title} className="grid grid-cols-[2.25rem_1fr] gap-x-3 sm:grid-cols-[3rem_1fr] sm:gap-x-4">
+                  <span className="exam flex h-9 w-9 items-center justify-center rounded-full border-2 border-ink bg-spark text-xl sm:h-12 sm:w-12 sm:text-2xl">
                     {i + 1}
                   </span>
                   <div>
-                    <h3 className="text-xl font-bold text-ink">{s.title}</h3>
-                    <p className="mt-1 max-w-[52ch] text-lg leading-relaxed text-ink-soft">{s.body}</p>
+                    <h3 className="text-lg font-bold leading-snug text-ink sm:text-xl">{s.title}</h3>
+                    <p className="mt-1 max-w-[52ch] text-base leading-relaxed text-ink-soft sm:text-lg">{s.body}</p>
                   </div>
                 </li>
               ))}
@@ -226,22 +226,22 @@ export default function Home() {
 
       {/* 7. Who is on the other end of the call. */}
       <section className="border-b-2 border-ink bg-white">
-        <div className={`${wrap} ${pad} grid gap-14 lg:grid-cols-2 lg:gap-20`}>
+        <div className={`${wrap} ${pad} grid gap-10 sm:gap-14 lg:grid-cols-2 lg:gap-20`}>
           <div>
             <h2 className={`${h2} text-ink`}>Who you would be trusting.</h2>
             {TEACHER && (
-              <Reveal as="figure" className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:gap-3 lg:flex-col lg:items-start lg:gap-5 xl:flex-row xl:items-end xl:gap-3">
-                <div className="sheet w-full max-w-[19rem] shrink-0 -rotate-2 p-3">
+              <Reveal as="figure" className="mt-6 flex flex-row items-center gap-4 sm:mt-10 sm:items-end sm:gap-3 lg:flex-col lg:items-start lg:gap-5 xl:flex-row xl:items-end xl:gap-3">
+                <div className="sheet w-[42%] max-w-[19rem] shrink-0 -rotate-2 p-1.5 sm:w-full sm:p-3">
                   <Image
                     src={TEACHER.photo}
                     alt={TEACHER.alt}
                     width={880}
                     height={1100}
-                    sizes="19rem"
+                    sizes="(min-width: 640px) 19rem, 42vw"
                     className="aspect-[4/5] w-full rounded-[3px] object-cover"
                   />
                 </div>
-                <figcaption className="-rotate-3 whitespace-nowrap text-[1.9rem] sm:mb-14 sm:text-[1.65rem] lg:mb-0 lg:text-[1.9rem] xl:mb-14 xl:text-[1.75rem]">
+                <figcaption className="-rotate-3 text-[1.4rem] min-[375px]:text-[1.55rem] sm:mb-14 sm:whitespace-nowrap sm:text-[1.65rem] lg:mb-0 lg:text-[1.9rem] xl:mb-14 xl:text-[1.75rem]">
                   <PenNote delay={0.5} time={0.5}>I&apos;m {TEACHER.name}.</PenNote>
                   <br />
                   {TEACHER.satMath && (
@@ -255,24 +255,21 @@ export default function Home() {
                 </figcaption>
               </Reveal>
             )}
-            <p className={`${lead} ${TEACHER ? "mt-10" : ""} text-ink`}>
-              PiSpark is a small online school in Astana, Kazakhstan. Yes, the stereotype is true:
-              we really, really like math. One teacher takes every lesson, so the person your
-              student meets in the free lesson is the person they keep.
-            </p>
-            {TEACHER?.note.map((t) => (
-              <p key={t} className="mt-4 max-w-[60ch] text-lg leading-relaxed text-ink">{t}</p>
+            {TEACHER?.note.map((t, i) => (
+              <p key={t} className={`${i === 0 ? "mt-6 sm:mt-10" : "mt-3 sm:mt-4"} max-w-[60ch] text-base leading-relaxed text-ink sm:text-lg`}>{t}</p>
             ))}
-            <p className="mt-4 max-w-[60ch] text-lg leading-relaxed text-ink">
-              You do not have to take our word for how we explain things. Every weekday we post SAT
-              math on{" "}
+            <p className={`${TEACHER ? "mt-3 sm:mt-4" : "mt-6"} max-w-[60ch] text-base leading-relaxed text-ink sm:text-lg`}>
+              PiSpark is a small online school in Astana, Kazakhstan. Yes, the stereotype is true:
+              we really, really like math.
+            </p>
+            <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-ink sm:mt-4 sm:text-lg">
+              See how we explain things before you talk to us: we post SAT math every weekday on{" "}
               <a href={INSTAGRAM_URL} className="font-semibold underline underline-offset-4">
                 Instagram, @pispark.math
               </a>
-              : worked questions, common mistakes, calculator shortcuts. Read a few before you talk
-              to us.
+              .
             </p>
-            <address className="mt-6 text-base not-italic leading-loose text-ink-soft">
+            <address className="mt-6 hidden text-base not-italic leading-loose text-ink-soft sm:block">
               {POSTAL_ADDRESS}
               <br />
               <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">{CONTACT_EMAIL}</a>
@@ -281,13 +278,13 @@ export default function Home() {
             </address>
           </div>
           <div>
-            <h3 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
+            <h3 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-4xl">
               Five things we will not do.
             </h3>
-            <Reveal as="ul" className="mt-6 divide-y-2 divide-grid border-y-2 border-grid">
+            <Reveal as="ul" className="mt-4 divide-y-2 divide-grid border-y-2 border-grid sm:mt-6">
               {wont.map((w, i) => (
-                <li key={w.title} className="py-5">
-                  <p className="text-2xl font-bold text-ink">
+                <li key={w.title} className="py-3.5 sm:py-5">
+                  <p className="text-xl font-bold text-ink sm:text-2xl">
                     {/* A title can wrap on a phone, so there the strike is drawn per line. */}
                     <span className="strike sm:hidden" style={{ ["--d" as string]: `${0.2 + i * 0.3}s` }}>
                       {w.title}
@@ -297,7 +294,7 @@ export default function Home() {
                       <PenStrike delay={0.2 + i * 0.45} />
                     </span>
                   </p>
-                  <p className="mt-1 max-w-[52ch] text-lg leading-relaxed text-ink-soft">{w.body}</p>
+                  <p className="mt-1 max-w-[52ch] text-base leading-relaxed text-ink-soft sm:text-lg">{w.body}</p>
                 </li>
               ))}
             </Reveal>
@@ -318,7 +315,7 @@ export default function Home() {
             </span>
           </p>
           <PlanList />
-          <p className="mt-8 max-w-[60ch] text-lg leading-relaxed text-ink">
+          <p className="mt-6 max-w-[60ch] text-base leading-relaxed text-ink sm:mt-8 sm:text-lg">
             <span className="box-decoration-clone bg-white/85">
               Not sure which? The free lesson ends with a recommendation based on the test date and
               the score you are aiming for.
@@ -329,18 +326,18 @@ export default function Home() {
 
       {/* 9. Questions. */}
       <section className="border-b-2 border-ink">
-        <div className={`${wrap} ${pad} grid gap-10 lg:grid-cols-[minmax(0,20rem)_1fr] lg:gap-20`}>
+        <div className={`${wrap} ${pad} grid gap-6 sm:gap-10 lg:grid-cols-[minmax(0,20rem)_1fr] lg:gap-20`}>
           <h2 className={`${h2} text-ink`}>Fair questions.</h2>
           <div className="divide-y-2 divide-grid border-y-2 border-grid">
             {faqs.map((f) => (
               <details key={f.q} className="group">
-                <summary className="flex min-h-14 cursor-pointer list-none items-baseline gap-3 py-4 text-xl font-bold text-ink marker:hidden [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-12 cursor-pointer list-none items-baseline gap-3 py-3.5 text-lg font-bold sm:min-h-14 sm:py-4 sm:text-xl text-ink marker:hidden [&::-webkit-details-marker]:hidden">
                   <span aria-hidden="true" className="exam w-4 shrink-0 text-2xl leading-none text-plot transition-transform duration-200 group-open:rotate-45">
                     +
                   </span>
                   {f.q}
                 </summary>
-                <p className="max-w-[60ch] pb-5 pl-7 text-lg leading-relaxed text-ink-soft">{f.a}</p>
+                <p className="max-w-[60ch] pb-5 pl-7 text-base leading-relaxed text-ink-soft sm:text-lg">{f.a}</p>
               </details>
             ))}
           </div>
@@ -349,7 +346,7 @@ export default function Home() {
 
       {/* 10. The ask. */}
       <section className="graph-ink">
-        <div className={`${wrap} ${pad} grid gap-12 lg:grid-cols-[1fr_minmax(0,26rem)] lg:items-center lg:gap-16`}>
+        <div className={`${wrap} ${pad} grid gap-8 sm:gap-12 lg:grid-cols-[1fr_minmax(0,26rem)] lg:items-center lg:gap-16`}>
           <Reveal>
             <h2 className={`${h2} text-white`}>Find out what is costing the points.</h2>
             <p className={`${lead} text-white/85`}>
@@ -358,7 +355,7 @@ export default function Home() {
               <a href={INSTAGRAM_DM_URL} className="font-semibold text-spark underline underline-offset-4">Instagram</a> or{" "}
               <a href={MESSENGER_URL} className="font-semibold text-spark underline underline-offset-4">Messenger</a>.
             </p>
-            <p className="mt-8 text-4xl">
+            <p className="mt-5 text-3xl sm:mt-8 sm:text-4xl">
               <PenNote light delay={0.3} time={0.9}>See you in the lesson.</PenNote>
             </p>
           </Reveal>

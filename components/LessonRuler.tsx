@@ -55,9 +55,9 @@ export function LessonRuler() {
   }
 
   return (
-    <div ref={root} className="mt-10">
+    <div ref={root} className="mt-6 sm:mt-10">
       <div className="relative" aria-hidden="true">
-        <div className="flex h-12 overflow-hidden rounded-md border-2 border-ink sm:h-16">
+        <div className="flex h-9 overflow-hidden rounded-md border-2 border-ink sm:h-16">
           {PARTS.map((p, i) => (
             <div
               key={p.from}
@@ -87,7 +87,30 @@ export function LessonRuler() {
           ))}
         </div>
       </div>
-      <ol className="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2 sm:gap-y-7 lg:grid-cols-4">
+      {/* Phones: the four parts as a compact list; the one picked or playing is described below it. */}
+      <ol className="mt-4 grid grid-cols-2 gap-2 sm:hidden">
+        {PARTS.map((p, i) => (
+          <li key={p.from}>
+            <button
+              type="button"
+              aria-pressed={(active ?? 0) === i}
+              aria-controls="lesson-part"
+              onClick={() => choose(i)}
+              className={`flex h-full w-full flex-col items-start rounded-lg border-2 px-3 py-2 text-left transition-colors ${(active ?? 0) === i ? "border-ink bg-paper" : "border-grid"}`}
+            >
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-soft">
+                <span aria-hidden="true" className={`${p.fill} inline-block h-3 w-3 rounded-sm border-2 border-ink`} />
+                {p.from} to {p.to} min
+              </span>
+              <span className="mt-0.5 text-base font-bold leading-snug text-ink">{p.title}</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+      <p id="lesson-part" aria-live="polite" className="mt-3 min-h-[6.75rem] text-base leading-relaxed text-ink-soft sm:hidden">
+        {PARTS[active ?? 0].body}
+      </p>
+      <ol className="mt-6 hidden gap-x-8 gap-y-7 sm:grid sm:grid-cols-2 lg:grid-cols-4">
         {PARTS.map((p, i) => (
           <li key={p.from}>
             <button

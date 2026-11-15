@@ -29,7 +29,7 @@ function useCount(target: number) {
 }
 
 const chip = (on: boolean) =>
-  `min-h-12 rounded-lg border-2 px-4 py-2.5 text-lg font-bold transition-colors ${
+  `min-h-11 rounded-lg border-2 px-3 py-2 text-base font-bold transition-colors sm:min-h-12 sm:px-4 sm:py-2.5 sm:text-lg ${
     on ? "border-spark bg-spark text-ink" : "border-white/45 text-white hover:border-white"
   }`;
 
@@ -53,8 +53,8 @@ export function DatePlanner({ options }: { options: SatOption[] }) {
   const testEvery = plan ? 4 * plan.perWeek : 0;
 
   return (
-    <div className="mt-8">
-      <div role="radiogroup" aria-label="Test date" className="flex flex-wrap gap-3">
+    <div className="mt-6 sm:mt-8">
+      <div role="radiogroup" aria-label="Test date" className="flex flex-wrap gap-2 sm:gap-3">
         {options.map((o, i) => (
           <button key={o.iso} type="button" role="radio" aria-checked={sel === i} onClick={() => setSel(i)} className={chip(sel === i)}>
             {o.short}
@@ -65,24 +65,24 @@ export function DatePlanner({ options }: { options: SatOption[] }) {
         </button>
       </div>
 
-      <div aria-live="polite" className="mt-10 grid gap-x-14 gap-y-8 lg:grid-cols-[auto_1fr]">
+      <div aria-live="polite" className="mt-6 grid gap-x-14 gap-y-4 sm:mt-10 sm:gap-y-8 lg:grid-cols-[auto_1fr]">
         {opt && plan ? (
           <>
-            <p className="font-display text-[5.5rem] font-extrabold leading-[0.85] tracking-tight text-white sm:text-[8rem]">
+            <p className="flex items-baseline gap-3 font-display text-[3.5rem] font-extrabold leading-[0.85] tracking-tight text-white sm:block sm:text-[8rem]">
               <span className="tabular-nums">{big}</span>
-              <span className="mt-3 block font-sans text-xl font-bold tracking-normal text-white/75">
+              <span className="font-sans text-lg font-bold tracking-normal text-white/75 sm:mt-3 sm:block sm:text-xl">
                 {inWeeks ? "weeks" : opt.days === 1 ? "day" : "days"} until {opt.day}
               </span>
             </p>
             <div key={opt.iso} data-in="true">
-              <p className="font-display text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
+              <p className="font-display text-2xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">
                 {plan.lessons > 0
                   ? `Room for ${plan.lessons} ${plan.lessons === 1 ? "lesson" : "lessons"} at ${pace}.`
                   : "No room for regular lessons, but the free one still fits."}
               </p>
 
               {plan.lessons > 0 && (
-                <div className="mt-6 flex flex-wrap items-center gap-x-2 gap-y-3" aria-hidden="true">
+                <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-3 sm:mt-6" aria-hidden="true">
                   {Array.from({ length: plan.lessons }, (_, i) => {
                     const test = plan.practiceTests > 0 && (i + 1) % testEvery === 0;
                     return (
@@ -107,13 +107,13 @@ export function DatePlanner({ options }: { options: SatOption[] }) {
                 </p>
               )}
 
-              <p className="mt-6 max-w-[58ch] text-lg leading-relaxed text-white/90">{plan.enoughFor}</p>
+              <p className="mt-4 max-w-[58ch] text-base leading-relaxed text-white/90 sm:mt-6 sm:text-lg">{plan.enoughFor}</p>
               <p className="mt-3 max-w-[58ch] text-base leading-relaxed text-white/70">
                 {opt.registrationOpen
                   ? `Registration with College Board closes ${opt.registerBy}.`
                   : "Regular registration for this date has closed. If your student is already registered, all of this still applies."}
               </p>
-              <p className="mt-6 flex flex-wrap items-center gap-x-3 text-3xl">
+              <p className="mt-4 flex flex-wrap items-center gap-x-3 text-[1.65rem] sm:mt-6 sm:text-3xl">
                 <PenNote light delay={0.7} time={0.6}>
                   that&apos;s the
                 </PenNote>

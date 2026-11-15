@@ -15,34 +15,34 @@ export function PlanList() {
       {PLANS.map((p) => (
         <li
           key={p.name}
-          className="grid gap-x-8 gap-y-3 border-b-2 border-ink p-6 last:border-b-0 sm:p-8 md:grid-cols-[1fr_1fr_auto] md:items-center"
+          className="grid grid-cols-[1fr_auto] items-start gap-x-4 gap-y-2 border-b-2 border-ink px-4 py-4 last:border-b-0 sm:p-8 md:grid-cols-[1fr_1fr_auto] md:items-center md:gap-x-8"
         >
           <div>
-            <h3 className="font-display text-3xl font-extrabold tracking-tight text-ink">{p.name}</h3>
-            <p className="mt-1 text-base leading-relaxed text-ink-soft">{p.what}</p>
+            <h3 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{p.name}</h3>
+            <p className="mt-0.5 text-[0.95rem] leading-snug text-ink-soft sm:mt-1 sm:text-base sm:leading-relaxed">{p.what}</p>
           </div>
-          <p className="text-base leading-relaxed text-ink">
-            <span className="font-semibold">Right when:</span> {p.bestWhen.charAt(0).toLowerCase() + p.bestWhen.slice(1)}.
-          </p>
-          <div className="md:text-right">
-            <p className="flex flex-wrap items-baseline font-display text-5xl font-extrabold tracking-tight text-ink md:justify-end">
+          <div className="text-right md:order-3">
+            <p className="font-display text-[2rem] font-extrabold leading-none tracking-tight text-ink sm:text-5xl">
               <span className="relative inline-block">
                 ${p.founding}
-                {fits === p.name && <PenCircle key={p.name} delay={0.3} className="-inset-x-5 -inset-y-3" />}
-              </span>
-              <span className="ml-3 whitespace-nowrap font-sans text-lg font-bold tracking-normal text-ink-soft">
-                {p.once ? "once" : "per 4 weeks"}
+                {fits === p.name && <PenCircle key={p.name} delay={0.3} className="-inset-x-3 -inset-y-2 sm:-inset-x-5 sm:-inset-y-3" />}
               </span>
             </p>
-            <p className="mt-1 text-base text-ink-soft">
-              About ${Math.round(p.founding / p.lessons)} a lesson. Later <s>${p.regular}</s>.
+            <p className="mt-1 whitespace-nowrap text-sm font-bold text-ink-soft sm:text-lg">
+              {p.once ? "once" : "per 4 weeks"}
             </p>
-            {fits === p.name && (
-              <p className="mt-1 text-2xl">
-                <PenNote delay={0.9} time={0.6}>fits your test date</PenNote>
-              </p>
-            )}
           </div>
+          <p className="col-span-2 text-[0.95rem] leading-snug text-ink sm:text-base sm:leading-relaxed md:order-2 md:col-span-1">
+            <span className="font-semibold">Right when:</span> {p.bestWhen.charAt(0).toLowerCase() + p.bestWhen.slice(1)}.{" "}
+            <span className="text-ink-soft">
+              About ${Math.round(p.founding / p.lessons)} a lesson. Later <s>${p.regular}</s>.
+            </span>
+            {fits === p.name && (
+              <span className="mt-1 block text-2xl">
+                <PenNote delay={0.9} time={0.6}>fits your test date</PenNote>
+              </span>
+            )}
+          </p>
         </li>
       ))}
     </Reveal>

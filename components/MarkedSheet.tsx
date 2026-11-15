@@ -40,7 +40,7 @@ function Written({
  */
 export function MarkedSheet() {
   return (
-    <Reveal className="relative mx-auto w-full max-w-[30rem] lg:mr-0">
+    <Reveal className="relative mx-auto w-[86%] max-w-[30rem] sm:w-full lg:mr-0">
       <div aria-hidden="true" className="sheet absolute inset-0 rotate-[2.5deg]" />
       <div className="sheet relative -rotate-1 p-2 sm:p-3">
         <svg
