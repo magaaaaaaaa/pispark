@@ -72,47 +72,48 @@ list. If the name and email look real, write to them yourself.
 Until Instagram and Facebook are connected (next section), approved posts simply wait. You
 can still tap any slide to download it and post by hand.
 
-## Connect Instagram and Facebook (once, about 20 minutes)
+## Connect Instagram and Facebook (once, about 15 minutes)
 
-You never give anyone your password. Instead you create a key (an "access token") that
-lets this site post to your own Page and Instagram account, and nothing else. You can
-cancel it at any time in your Facebook settings.
+You never give anyone your password. You create a key (an "access token") that lets this site
+post to the PiSpark Math Page and @pispark.math, and nothing else.
 
-Meta changes these screens often, so button names may differ slightly from what is written
-here. The goal of each step is what matters.
+Use a **system user** in Meta Business Suite. It is a robot account that belongs to your
+business, not to your personal Facebook profile, so its key does not break when you log out,
+change your password, pass a security check, or generate another token somewhere else. Keys
+made in the Graph API Explorer are tied to your personal login and break for all of those.
 
-**Before you start:** in Meta Business Suite → Settings → Accounts → Instagram accounts,
-check that `@pispark.math` is connected to your Facebook Page. Posting to Instagram only
-works through a linked Page.
+Meta renames these screens often; the goal of each step is what matters.
 
-1. Go to **developers.facebook.com**, log in with your Facebook account, and register as a
-   developer if asked (free).
-2. **Create an app.** Choose the option for managing a business or Page ("Other" →
-   "Business" on some screens). Name it `PiSpark Poster`. You do not need to publish the
-   app or submit it for review: it only ever touches your own accounts.
-3. Open **Tools → Graph API Explorer**. At the top right pick your new app.
-4. Under "User or Page", choose **Get User Access Token** and tick these permissions:
-   `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`, `instagram_basic`,
-   `instagram_content_publish`, `business_management`. Press **Generate Access Token** and
-   approve the pop-up, selecting your Page and your Instagram account.
-5. Make it long-lived: open **Tools → Access Token Debugger**, paste the token, press
-   **Debug**, then **Extend Access Token** at the bottom. Copy the new, longer token.
-6. Back in Graph API Explorer, paste that long token into the token box, type
-   `me/accounts` in the address field and press **Submit**. In the result, find your Page
-   and copy the value of its `access_token`. This is the **Page token**. A Page token made
-   this way does not expire.
-7. In **Vercel** → your `pispark` project → Settings → Environment Variables, add a
-   variable named `META_PAGE_TOKEN` with that value, for Production. Then Deployments →
-   the latest one → **Redeploy**.
-8. Open `pispark.site/owner/posts` and press **Test Instagram and Facebook connection**.
-   It should name your Page and say Instagram is linked.
+1. **business.facebook.com → Settings** (business portfolio settings).
+2. **Accounts → Pages**: PiSpark Math must be listed. If not: Add → add a Page you own.
+   **Accounts → Instagram accounts**: @pispark.math must be listed. If not, connect it.
+3. **Accounts → Apps → Add → Connect an app ID**: enter the App ID of *PiSpark Poster*
+   (developers.facebook.com → My apps → PiSpark Poster → the number under its name).
+4. **Users → System users → Add**: name `PiSpark poster`, role **Admin**.
+5. Select the new system user → **Assign assets**:
+   - Pages → PiSpark Math → turn on full control.
+   - Instagram accounts → @pispark.math → full control.
+   - Apps → PiSpark Poster → full control.
+6. Still on the system user → **Generate new token**:
+   - App: PiSpark Poster. Expiration: **Never**.
+   - Permissions: `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`,
+     `instagram_basic`, `instagram_content_publish`, `instagram_manage_insights`,
+     `business_management`.
+   - Generate, and copy the token straight away: Meta shows it only once.
+7. **Vercel** → `pispark` → Settings → Environment Variables → edit `META_PAGE_TOKEN`, paste the
+   token, save. Then Deployments → the latest one → **Redeploy**, and wait until it says Ready.
+8. Open `pispark.site/owner/posts` → **Test Instagram and Facebook connection**. It should say
+   *Connected to the Facebook Page "PiSpark Math" and its Instagram account.*
+
+You can paste the system user token as it is: the site finds the PiSpark Math Page and its own
+Page token by itself. (A Page token made the old way also still works.)
 
 Do not paste the token into a chat or an email. If it ever leaks, remove the app under
 Facebook → Settings → Business integrations, and make a new token.
 
 If a post fails to publish, you get an email saying why, and the post shows a
-**Try again** button. The usual cause is a token that was revoked (for example after a
-Facebook password change): repeat steps 3 to 7.
+**Try again** button. If the email says the token lost its access, make a new token for the
+same system user (step 6) and save it in Vercel (step 7).
 
 ## Still to do
 

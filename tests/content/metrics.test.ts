@@ -4,6 +4,7 @@ vi.mock("@/lib/content/repo", () => ({ listRecentlyPublished: vi.fn(), saveMetri
 
 import * as repo from "@/lib/content/repo";
 import { refreshMetrics } from "@/lib/content/metrics";
+import { forgetPage } from "@/lib/content/meta";
 import type { Post } from "@/lib/content/schema";
 
 const r = vi.mocked(repo);
@@ -15,6 +16,7 @@ const seen: string[] = [];
 
 beforeEach(() => {
   vi.resetAllMocks();
+  forgetPage();
   seen.length = 0;
   fail = () => false;
   process.env.META_PAGE_TOKEN = "page-token";

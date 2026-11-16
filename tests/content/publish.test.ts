@@ -19,6 +19,7 @@ import * as repo from "@/lib/content/repo";
 import { sendEmail } from "@/lib/email/send";
 import { contentHash } from "@/lib/content/hash";
 import { easternDate, previousDay, runContent } from "@/lib/content/publish";
+import { forgetPage } from "@/lib/content/meta";
 import type { Post } from "@/lib/content/schema";
 
 const r = vi.mocked(repo);
@@ -52,6 +53,7 @@ let statusCode: string | undefined = "FINISHED";
 
 beforeEach(() => {
   vi.resetAllMocks();
+  forgetPage();
   calls = [];
   failOn = () => null;
   statusCode = "FINISHED";

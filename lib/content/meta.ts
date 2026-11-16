@@ -3,7 +3,11 @@ import "server-only";
 /**
  * The small part of Meta's Graph API this site uses: posting images to the
  * school's own Facebook Page and to the Instagram account linked to it.
- * One Page access token (META_PAGE_TOKEN) covers both.
+ *
+ * META_PAGE_TOKEN may hold either a Page token, or a system user (or user) token
+ * from Meta Business Suite that has access to the Page. With the second kind
+ * the site looks up the Page's own token itself, preferring the Page that has
+ * an Instagram account linked, or the one named in META_PAGE_NAME.
  */
 // No version in the address on purpose: Meta then uses the app's own default
 // version, so this does not break when an old pinned version is retired.
@@ -16,8 +20,13 @@ export const metaConnected = () => token() !== "";
 
 type Json = Record<string, unknown>;
 
-async function graph(method: "GET" | "POST", path: string, params: Record<string, string>): Promise<Json> {
-  const headers = { Authorization: `Bearer ${token()}` };
+async function graph(
+  method: "GET" | "POST",
+  path: string,
+  params: Record<string, string>,
+  as: string | null = null,
+): Promise<Json> {
+  const headers = { Authorization: `Bearer ${as ?? (await page()).token}` };
   let res: Response;
   if (method === "GET") {
     const url = new URL(`${GRAPH}${path}`);
@@ -49,12 +58,85 @@ export interface MetaAccounts {
 
 /** Which Page the token belongs to, and its linked Instagram account. */
 export async function metaAccounts(): Promise<MetaAccounts> {
-  const me = await graph("GET", "/me", { fields: "id,name,instagram_business_account" });
+  const { pageId, pageName, igUserId } = await page();
+  return { pageId, pageName, igUserId };
+}
+
+/** For tests: forget which Page the last token resolved to. */
+export function forgetPage(): void {
+  resolved = null;
+}
+
+interface PageAccess {
+  pageId: string;
+  pageName: string;
+  igUserId: string | null;
+  /** The token to act as the Page with. */
+  token: string;
+}
+
+let resolved: { key: string; at: number; access: Promise<PageAccess> } | null = null;
+/** Re-check now and then, so a token swapped in Vercel takes effect without a restart. */
+const RESOLVE_TTL_MS = 10 * 60_000;
+
+/** Which Page the token gives access to, and the token to act as that Page. */
+function page(): Promise<PageAccess> {
+  const key = token();
+  if (!resolved || resolved.key !== key || Date.now() - resolved.at > RESOLVE_TTL_MS) {
+    const access = resolvePage(key);
+    resolved = { key, at: Date.now(), access };
+    access.catch(() => {
+      if (resolved?.access === access) resolved = null;
+    });
+  }
+  return resolved.access;
+}
+
+const igId = (v: unknown) => (v as { id?: string } | undefined)?.id ?? null;
+
+async function resolvePage(key: string): Promise<PageAccess> {
+  let me: Json;
+  try {
+    // A Page token answers as the Page itself.
+    me = await graph("GET", "/me", { fields: "id,name,instagram_business_account" }, key);
+    return { pageId: String(me.id), pageName: String(me.name ?? ""), igUserId: igId(me.instagram_business_account), token: key };
+  } catch (e) {
+    // Any other token (system user, user) has no such field on itself; anything else is a real failure.
+    if (!/instagram_business_account|nonexisting field/i.test(e instanceof Error ? e.message : "")) throw explain(e);
+  }
+  const list = await graph("GET", "/me/accounts", { fields: "id,name,access_token,instagram_business_account", limit: "100" }, key).catch(
+    (e) => {
+      throw explain(e);
+    },
+  );
+  const pages = ((list.data as Json[] | undefined) ?? []).filter((p) => p.access_token);
+  const wanted = (process.env.META_PAGE_NAME ?? "").trim().toLowerCase();
+  const chosen =
+    (wanted && pages.find((p) => String(p.name ?? "").toLowerCase() === wanted)) ||
+    pages.find((p) => igId(p.instagram_business_account)) ||
+    pages[0];
+  if (!chosen) {
+    throw new Error(
+      "This token cannot see any Facebook Page. In Meta Business Suite, give it (or its system user) access to the PiSpark Math Page and make a new token.",
+    );
+  }
   return {
-    pageId: String(me.id),
-    pageName: String(me.name ?? ""),
-    igUserId: (me.instagram_business_account as { id?: string } | undefined)?.id ?? null,
+    pageId: String(chosen.id),
+    pageName: String(chosen.name ?? ""),
+    igUserId: igId(chosen.instagram_business_account),
+    token: String(chosen.access_token),
   };
+}
+
+/** Meta's permission errors, in words the owner can act on. */
+function explain(e: unknown): Error {
+  const m = e instanceof Error ? e.message : String(e);
+  if (/must be granted|permission|OAuthException|session has expired|validating access token/i.test(m)) {
+    return new Error(
+      `${m} — The saved token has lost its access. Make a new one (owner guide, "Connect Instagram and Facebook"), save it in Vercel as META_PAGE_TOKEN and redeploy.`,
+    );
+  }
+  return e instanceof Error ? e : new Error(m);
 }
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
