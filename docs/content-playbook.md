@@ -86,7 +86,24 @@ How to use it:
    stereotype lives on the website; it stays out of posts, because posts become ads.
 6. **Plain language.** A 15-year-old and their parent should both follow it. Short sentences.
 7. **Every post ends with the `cta` slide**, and every caption includes "link in bio".
-8. **At most eight hashtags**, relevant ones: `#SAT #SATmath #digitalSAT #SATprep` plus the topic.
+8. **At most five hashtags** (Instagram's cap since December 2025): `#SAT #SATmath #digitalSAT
+   #SATprep` plus one for the topic.
+9. **American English.** Math, never "maths". The audience is in the US.
+10. **Run every caption through the Instagram tools before saving** (see "Captions" below).
+
+## Captions
+
+The `ig-*` skills in `.claude/skills/` are installed for this (see
+`.claude/skills/IG-AGENT-SOURCE.md`). The account's voice is `docs/instagram-voice.md`;
+copy it to `~/.claude/instagram/voice.md` first. For each caption:
+
+1. Save it to a text file and run
+   `python3 -I .claude/skills/ig-caption/caption.py FILE --keywords "SAT math,digital SAT"`.
+   No FAIL is allowed. The first line must land whole inside the 125 characters the feed
+   shows, and "SAT math" or "digital SAT" must appear inside that window.
+2. Run `python3 -I .claude/skills/ig-human/humanize.py FILE --report`, keep its fixes where
+   they are right, rewrite anything it flags, then `detect.py FILE` must say PASS.
+3. Put the caption back into the post. Slides follow the same plain-language rules.
 
 ## The format
 

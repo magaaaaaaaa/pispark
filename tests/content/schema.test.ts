@@ -111,8 +111,10 @@ describe("checkPost", () => {
     expect(check({ caption: "Free lesson at pispark.site" }).ok).toBe(true);
   });
 
-  it("rejects more than eight hashtags", () => {
-    expect(check({ caption: "x " + Array.from({ length: 9 }, (_, i) => `#tag${i}`).join(" ") }).ok).toBe(false);
+  it("rejects more than five hashtags", () => {
+    const tags = (n: number) => "x link in bio " + Array.from({ length: n }, (_, i) => `#tag${i}`).join(" ");
+    expect(check({ caption: tags(6) }).ok).toBe(false);
+    expect(check({ caption: tags(5) }).ok).toBe(true);
   });
 
   it("lists every problem, in plain words", () => {

@@ -165,8 +165,9 @@ export function checkPost(raw: unknown): CheckResult {
       problems.push(`The post mentions another account (${mention}).`);
     }
   }
-  if ((content.caption.match(/#[\p{L}\p{N}_]+/gu) ?? []).length > 8) {
-    problems.push("The caption has more than eight hashtags.");
+  // Instagram's cap since December 2025.
+  if ((content.caption.match(/#[\p{L}\p{N}_]+/gu) ?? []).length > 5) {
+    problems.push("The caption has more than five hashtags.");
   }
 
   return problems.length ? { ok: false, problems } : { ok: true, content };
