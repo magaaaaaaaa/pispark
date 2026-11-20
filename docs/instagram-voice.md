@@ -65,7 +65,8 @@ claimed. Keep it in step with the website and `docs/content-playbook.md`.
 
 ## Proof I can use
 
-- Maga scored 780 out of 800 on SAT math.
+- Maga scored 790 out of 800 on SAT math (99th percentile), on the 7 November 2026 SAT.
+  Official College Board score report seen. Do not quote his total or reading score.
 - Maga studies mathematics at Nazarbayev University, Kazakhstan.
 - Maga has taught math since middle school; his students went on to good grades at school.
 - PiSpark is a small online school in Astana, Kazakhstan; lessons are live and 1-on-1.

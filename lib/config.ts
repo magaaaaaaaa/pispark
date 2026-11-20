@@ -87,9 +87,9 @@ export const TEACHER: Teacher | null = {
   name: "Maga",
   photo: "/teacher.jpg",
   alt: "Maga, who teaches every PiSpark lesson, looking straight at the camera",
-  satMath: 780,
+  satMath: 790,
   note: [
-    "I scored 780 out of 800 on SAT math, and I study mathematics at Nazarbayev University, Kazakhstan's English-language research university.",
+    "I scored 790 out of 800 on SAT math in November 2026, the 99th percentile, and I study mathematics at Nazarbayev University, Kazakhstan's English-language research university.",
     "I have been teaching math since I was in middle school myself, and the students I worked with went on to good grades at school. Now I teach one thing: the SAT math section, which I know inside out.",
   ],
 };
